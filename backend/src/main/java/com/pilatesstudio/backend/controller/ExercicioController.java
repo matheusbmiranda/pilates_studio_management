@@ -6,6 +6,10 @@ import com.pilatesstudio.backend.service.ExercicioService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+
 
 @RestController
 @RequestMapping("/exercicios")
@@ -18,5 +22,11 @@ public class ExercicioController {
     @ResponseStatus(HttpStatus.CREATED)
     public ExercicioResponse criar(@RequestBody ExercicioRequest request) {
         return exercicioService.criar(request);
+    }
+
+    @GetMapping
+    public Page<ExercicioResponse> listar(@RequestParam(required = false) String nome, Pageable pageable) {
+
+        return exercicioService.listar(nome, pageable);
     }
 }

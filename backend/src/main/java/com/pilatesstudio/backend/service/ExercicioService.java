@@ -5,6 +5,8 @@ import com.pilatesstudio.backend.dto.ExercicioResponse;
 import com.pilatesstudio.backend.model.entity.Exercicio;
 import com.pilatesstudio.backend.repository.ExercicioRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,5 +46,34 @@ public class ExercicioService {
         response.setImagemUrl(exercicioSalvo.getImagemUrl());
 
         return response;
+    }
+
+    public Page<ExercicioResponse> listar(String nome, Pageable pageable) {
+
+        Page<Exercicio> exercicios;
+
+        if (nome == null || nome.isBlank()) {
+            exercicios = exercicioRepository.findAll(pageable);
+        } else {
+            exercicios = exercicioRepository.findByNomeContainingIgnoreCaseOrTraducaoContainingIgnoreCase(nome, nome, pageable);
+        }
+
+        return exercicios.map(exercicio -> {
+
+            ExercicioResponse response = new ExercicioResponse();
+
+            response.setId(exercicio.getId());
+            response.setNome(exercicio.getNome());
+            response.setTraducao(exercicio.getTraducao());
+            response.setNiveis(exercicio.getNiveis());
+            response.setAparelhos(exercicio.getAparelhos());
+            response.setRegioesCorporais(exercicio.getRegioesCorporais());
+            response.setFocosMusculares(exercicio.getFocosMusculares());
+            response.setObjetivos(exercicio.getObjetivos());
+            response.setContraindicacoes(exercicio.getContraindicacoes());
+            response.setImagemUrl(exercicio.getImagemUrl());
+
+            return response;
+        });
     }
 }

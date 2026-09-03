@@ -97,7 +97,7 @@ export default function AlunosScreen() {
                 accessibilityLabel="Cadastrar aluno"
                 onPress={() => router.push('/cadastrar-aluno' as Href)}
                 style={styles.addButton}>
-                <Text style={styles.addButtonText}>+</Text>
+                <AddIcon />
               </Pressable>
             </View>
 
@@ -188,6 +188,16 @@ function AlunoCard({ aluno, onPress }: { aluno: Aluno; onPress: () => void }) {
   );
 }
 
+function AddIcon() {
+  return (
+    <View style={styles.addIcon}>
+      <View style={styles.addIconHorizontal} />
+      <View style={styles.addIconVertical} />
+      <View style={styles.addIconHorizontal} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F7F8F7' },
   listContent: { paddingHorizontal: 20, paddingBottom: BottomTabInset + 24 },
@@ -196,7 +206,9 @@ const styles = StyleSheet.create({
   title: { color: '#1D2B25', fontSize: 30, fontWeight: '700', letterSpacing: -0.7 },
   subtitle: { color: '#6C7670', fontSize: 14, marginTop: 4 },
   addButton: { alignItems: 'center', backgroundColor: '#276749', borderRadius: 16, height: 48, justifyContent: 'center', width: 48 },
-  addButtonText: { color: '#FFFFFF', fontSize: 29, fontWeight: '400', lineHeight: 32 },
+  addIcon: { alignItems: 'center', flexDirection: 'row', height: 20, width: 20 },
+  addIconHorizontal: { backgroundColor: '#FFFFFF', borderRadius: 2, flex: 1, height: 3 },
+  addIconVertical: { backgroundColor: '#FFFFFF', borderRadius: 2, height: 20, width: 3 },
   searchContainer: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#E5E9E6', borderRadius: 14, borderWidth: 1, flexDirection: 'row', height: 52, paddingHorizontal: 15 },
   searchIcon: { color: '#68736C', fontSize: 27, lineHeight: 27, marginRight: 8, transform: [{ rotate: '-20deg' }] },
   searchInput: { color: '#1D2B25', flex: 1, fontSize: 16, height: '100%' },

@@ -1,3 +1,4 @@
+import { type Href } from 'expo-router';
 import { Tabs, TabList, TabSlot, TabTrigger, TabTriggerSlotProps } from 'expo-router/ui';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -9,6 +10,9 @@ export default function AppTabs() {
         <View style={styles.tabList}>
           <TabTrigger name="index" href="/(tabs)" asChild>
             <TabButton>Alunos</TabButton>
+          </TabTrigger>
+          <TabTrigger name="exercicios" href={'/exercicios' as Href} asChild>
+            <TabButton>Exercícios</TabButton>
           </TabTrigger>
           <TabTrigger name="explore" href="/explore" asChild>
             <TabButton>Aulas</TabButton>

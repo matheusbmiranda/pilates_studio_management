@@ -1,7 +1,7 @@
 package com.pilatesstudio.backend.service;
 
 import com.pilatesstudio.backend.config.CloudinaryProperties;
-import com.pilatesstudio.backend.dto.CloudinarySignatureResponse;
+import com.pilatesstudio.backend.dto.CloudinarySignatureResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,14 +18,14 @@ public class CloudinarySignatureService {
 
     private final CloudinaryProperties cloudinaryProperties;
 
-    public CloudinarySignatureResponse generateUploadSignature() {
+    public CloudinarySignatureResponseDTO generateUploadSignature() {
         validateConfiguration();
 
         long timestamp = System.currentTimeMillis() / 1000;
         String parametersToSign = "timestamp=" + timestamp + "&upload_preset=" + cloudinaryProperties.getUploadPreset();
         String signature = sha1(parametersToSign + cloudinaryProperties.getApiSecret());
 
-        return new CloudinarySignatureResponse(
+        return new CloudinarySignatureResponseDTO(
                 cloudinaryProperties.getCloudName(),
                 cloudinaryProperties.getApiKey(),
                 cloudinaryProperties.getUploadPreset(),

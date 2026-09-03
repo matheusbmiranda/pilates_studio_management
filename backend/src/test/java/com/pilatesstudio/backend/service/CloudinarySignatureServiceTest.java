@@ -1,7 +1,7 @@
 package com.pilatesstudio.backend.service;
 
 import com.pilatesstudio.backend.config.CloudinaryProperties;
-import com.pilatesstudio.backend.dto.CloudinarySignatureResponse;
+import com.pilatesstudio.backend.dto.CloudinarySignatureResponseDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,7 +18,7 @@ class CloudinarySignatureServiceTest {
         properties.setApiSecret("private-api-secret");
         properties.setUploadPreset("pilates-exercicios");
 
-        CloudinarySignatureResponse response = new CloudinarySignatureService(properties).generateUploadSignature();
+        CloudinarySignatureResponseDTO response = new CloudinarySignatureService(properties).generateUploadSignature();
 
         assertEquals("demo-cloud", response.cloudName());
         assertEquals("public-api-key", response.apiKey());

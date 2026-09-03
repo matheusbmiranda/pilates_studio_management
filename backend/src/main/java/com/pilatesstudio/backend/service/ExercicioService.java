@@ -1,7 +1,7 @@
 package com.pilatesstudio.backend.service;
 
-import com.pilatesstudio.backend.dto.ExercicioRequest;
-import com.pilatesstudio.backend.dto.ExercicioResponse;
+import com.pilatesstudio.backend.dto.ExercicioRequestDTO;
+import com.pilatesstudio.backend.dto.ExercicioResponseDTO;
 import com.pilatesstudio.backend.model.entity.Exercicio;
 import com.pilatesstudio.backend.repository.ExercicioRepository;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ public class ExercicioService {
     private final ExercicioRepository exercicioRepository;
 
     // Metodo para criar um exercicio novo
-    public ExercicioResponse criar(ExercicioRequest request) {
+    public ExercicioResponseDTO criar(ExercicioRequestDTO request) {
 
         Exercicio exercicio = new Exercicio();
 
@@ -32,7 +32,7 @@ public class ExercicioService {
 
         Exercicio exercicioSalvo = exercicioRepository.save(exercicio);
 
-        ExercicioResponse response = new ExercicioResponse();
+        ExercicioResponseDTO response = new ExercicioResponseDTO();
 
         response.setId(exercicioSalvo.getId());
         response.setNome(exercicioSalvo.getNome());
@@ -48,7 +48,7 @@ public class ExercicioService {
         return response;
     }
 
-    public Page<ExercicioResponse> listar(String nome, Pageable pageable) {
+    public Page<ExercicioResponseDTO> listar(String nome, Pageable pageable) {
 
         Page<Exercicio> exercicios;
 
@@ -60,7 +60,7 @@ public class ExercicioService {
 
         return exercicios.map(exercicio -> {
 
-            ExercicioResponse response = new ExercicioResponse();
+            ExercicioResponseDTO response = new ExercicioResponseDTO();
 
             response.setId(exercicio.getId());
             response.setNome(exercicio.getNome());

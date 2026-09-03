@@ -1,6 +1,6 @@
 package com.pilatesstudio.backend.controller;
 
-import com.pilatesstudio.backend.dto.CloudinarySignatureResponse;
+import com.pilatesstudio.backend.dto.CloudinarySignatureResponseDTO;
 import com.pilatesstudio.backend.service.CloudinarySignatureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,7 @@ public class UploadController {
     private final CloudinarySignatureService cloudinarySignatureService;
 
     @PostMapping("/signature")
-    public CloudinarySignatureResponse generateSignature() {
+    public CloudinarySignatureResponseDTO generateSignature() {
         return cloudinarySignatureService.generateUploadSignature();
     }
 }

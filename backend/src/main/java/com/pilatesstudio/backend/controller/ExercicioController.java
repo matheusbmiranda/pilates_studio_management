@@ -1,7 +1,7 @@
 package com.pilatesstudio.backend.controller;
 
-import com.pilatesstudio.backend.dto.ExercicioRequest;
-import com.pilatesstudio.backend.dto.ExercicioResponse;
+import com.pilatesstudio.backend.dto.ExercicioRequestDTO;
+import com.pilatesstudio.backend.dto.ExercicioResponseDTO;
 import com.pilatesstudio.backend.service.ExercicioService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,12 +21,12 @@ public class ExercicioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ExercicioResponse criar(@Valid @RequestBody ExercicioRequest request) {
+    public ExercicioResponseDTO criar(@Valid @RequestBody ExercicioRequestDTO request) {
         return exercicioService.criar(request);
     }
 
     @GetMapping
-    public Page<ExercicioResponse> listar(@RequestParam(required = false) String nome, Pageable pageable) {
+    public Page<ExercicioResponseDTO> listar(@RequestParam(required = false) String nome, Pageable pageable) {
 
         return exercicioService.listar(nome, pageable);
     }

@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.text.Normalizer;
+import java.util.Locale;
 
 
 @Service
@@ -27,6 +29,9 @@ public class AlunoService {
         aluno.setEmail(request.getEmail());
         aluno.setStatus(request.getStatus());
         aluno.setObservacoes(request.getObservacoes());
+
+        aluno.setNomeNormalizado(Normalizer.normalize(aluno.getNome(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT));
 
         Aluno alunoSalvo = alunoRepository.save(aluno);
 
@@ -50,7 +55,16 @@ public class AlunoService {
         if (nome == null || nome.isBlank()) {
             alunos = alunoRepository.findAll(pageable);
         } else {
-            alunos = alunoRepository.findByNomeContainingIgnoreCase(nome, pageable);
+
+            String nomeNormalizado = Normalizer.normalize(
+                    nome,
+                    Normalizer.Form.NFD
+            ).replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT);
+
+            alunos = alunoRepository.findByNomeNormalizadoContainingIgnoreCase(
+                    nomeNormalizado,
+                    pageable
+            );
         }
 
         return alunos.map(aluno -> {
@@ -68,5 +82,54 @@ public class AlunoService {
             return response;
         });
 
+    }
+
+    public AlunoResponseDTO buscarPorId(String id) {
+
+        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+
+        AlunoResponseDTO response = new AlunoResponseDTO();
+
+        response.setId(aluno.getId());
+        response.setNome(aluno.getNome());
+        response.setDataNascimento(aluno.getDataNascimento());
+        response.setTelefone(aluno.getTelefone());
+        response.setEmail(aluno.getEmail());
+        response.setStatus(aluno.getStatus());
+        response.setObservacoes(aluno.getObservacoes());
+
+        return response;
+    }
+
+    public AlunoResponseDTO editar(String id, AlunoRequestDTO request) {
+
+        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+
+        aluno.setNome(request.getNome());
+        aluno.setDataNascimento(request.getDataNascimento());
+        aluno.setTelefone(request.getTelefone());
+        aluno.setEmail(request.getEmail());
+        aluno.setStatus(request.getStatus());
+        aluno.setObservacoes(request.getObservacoes());
+
+        aluno.setNomeNormalizado(
+                Normalizer.normalize(aluno.getNome(), Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "")
+                        .toLowerCase(Locale.ROOT)
+        );
+
+        Aluno alunoSalvo = alunoRepository.save(aluno);
+
+        AlunoResponseDTO response = new AlunoResponseDTO();
+
+        response.setId(alunoSalvo.getId());
+        response.setNome(alunoSalvo.getNome());
+        response.setDataNascimento(alunoSalvo.getDataNascimento());
+        response.setTelefone(alunoSalvo.getTelefone());
+        response.setEmail(alunoSalvo.getEmail());
+        response.setStatus(alunoSalvo.getStatus());
+        response.setObservacoes(alunoSalvo.getObservacoes());
+
+        return response;
     }
 }

@@ -2,7 +2,7 @@ import { useState, type Dispatch, type SetStateAction } from 'react';
 import { useRouter } from 'expo-router';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { criarExercicio, uploadImagemExercicio, type ExercicioRequest } from '@/services/exercicios-api';
@@ -98,9 +98,10 @@ export default function CadastrarExercicioScreen() {
       };
 
       await criarExercicio(exercicio);
-      Alert.alert('Exercício salvo', 'O exercício foi salvo com sucesso.', [{ text: 'Voltar para exercícios', onPress: () => router.back() }]);
+
+      router.replace('/(tabs)/exercicios?sucesso=1');
     } catch (erro) {
-      setErroOperacao(getErrorMessage(erro, 'Não foi possível salvar o exercício. Tente novamente.'));
+      setErroOperacao('Não foi possível salvar o exercício.');
     } finally {
       setSalvando(false);
       setEnviandoImagem(false);

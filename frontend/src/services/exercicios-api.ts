@@ -22,6 +22,31 @@ export type ExercicioRequest = {
   imagemUrl: string | null;
 };
 
+export type Exercicio = {
+  id: string;
+  nome: string;
+  traducao: string;
+  niveis: string[];
+  aparelhos: string[];
+  regioesCorporais: string[];
+  focosMusculares: string[];
+  objetivos: string[];
+  contraindicacoes: string[];
+  imagemUrl: string | null;
+};
+
+export type ExercicioPage = {
+  content: Exercicio[];
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  first: boolean;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  empty: boolean;
+};
+
 export async function uploadImagemExercicio(uri: string): Promise<string> {
   const signature = await requestJson<CloudinarySignature>('/uploads/cloudinary/signature', { method: 'POST' });
   const formData = new FormData();
@@ -60,6 +85,64 @@ export async function criarExercicio(exercicio: ExercicioRequest): Promise<void>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(exercicio),
   });
+}
+
+export async function listarExercicios(
+    page: number = 0,
+    size: number = 15,
+    nome?: string,
+    sort?: string,
+    nivel?: string,
+): Promise<ExercicioPage> {
+
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+
+  if (nome && nome.trim()) {
+    params.append('nome', nome.trim());
+  }
+
+  if (sort) {
+    params.append('sort', sort);
+  }
+
+  if (nivel) {
+    params.append('nivel', nivel);
+  }
+
+  return requestJson<ExercicioPage>(
+      `/exercicios?${params.toString()}`,
+      {},
+  );
+}
+
+export async function buscarExercicioPorId(
+    id: string,
+): Promise<Exercicio> {
+
+  return requestJson<Exercicio>(
+      `/exercicios/${id}`,
+      {},
+  );
+}
+
+export async function atualizarExercicio(
+    id: string,
+    exercicio: ExercicioRequest,
+): Promise<Exercicio> {
+
+  return requestJson<Exercicio>(
+      `/exercicios/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(exercicio),
+      },
+  );
 }
 
 async function requestJson<T = unknown>(path: string, options: RequestInit): Promise<T> {

@@ -19,16 +19,28 @@ public class AlunoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AlunoResponseDTO criar(@Valid @RequestBody AlunoRequestDTO request) {
+    public AlunoResponseDTO criarAluno(@Valid @RequestBody AlunoRequestDTO request) {
 
         return alunoService.criar(request);
     }
 
     @GetMapping
-    public Page<AlunoResponseDTO> listar(@RequestParam(required = false) String nome, Pageable pageable) {
+    public Page<AlunoResponseDTO> listarAlunos(@RequestParam(required = false) String nome, Pageable pageable) {
 
         return alunoService.listar(nome, pageable);
 
     }
 
+    @GetMapping("/{id}")
+    public AlunoResponseDTO buscarPorId(@PathVariable String id) {
+
+        return alunoService.buscarPorId(id);
+
+    }
+
+    @PutMapping("/{id}")
+    public AlunoResponseDTO editarAluno(@PathVariable String id, @Valid @RequestBody AlunoRequestDTO request) {
+
+        return alunoService.editar(id, request);
+    }
 }

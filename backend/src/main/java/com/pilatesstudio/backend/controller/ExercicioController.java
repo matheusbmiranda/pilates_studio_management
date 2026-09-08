@@ -26,8 +26,34 @@ public class ExercicioController {
     }
 
     @GetMapping
-    public Page<ExercicioResponseDTO> listar(@RequestParam(required = false) String nome, Pageable pageable) {
+    public Page<ExercicioResponseDTO> listar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String nivel,
+            @RequestParam(required = false) String aparelho,
+            @RequestParam(required = false) String regiaoCorporal,
+            @RequestParam(required = false) String focoMuscular,
+            Pageable pageable
+    ) {
+        return exercicioService.listar(
+                nome,
+                nivel,
+                aparelho,
+                regiaoCorporal,
+                focoMuscular,
+                pageable
+        );
+    }
 
-        return exercicioService.listar(nome, pageable);
+    @GetMapping("/{id}")
+    public ExercicioResponseDTO buscarPorId(@PathVariable String id) {
+
+        return exercicioService.buscarPorId(id);
+
+    }
+
+    @PutMapping("/{id}")
+    public ExercicioResponseDTO editarExercicio(@PathVariable String id, @Valid @RequestBody ExercicioRequestDTO request) {
+
+        return exercicioService.editar(id, request);
     }
 }

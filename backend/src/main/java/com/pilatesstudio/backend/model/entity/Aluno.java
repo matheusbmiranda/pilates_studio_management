@@ -26,6 +26,8 @@ public class Aluno {
     @NotBlank(message = "O nome não pode estar vazio.")
     private String nome;
 
+    private String nomeNormalizado;
+
     @NotNull(message = "Preencha a data de nascimento.")
     private LocalDate dataNascimento;
 

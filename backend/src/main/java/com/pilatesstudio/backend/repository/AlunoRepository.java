@@ -7,6 +7,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface AlunoRepository extends MongoRepository<Aluno, String> {
 
-    Page<Aluno> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+    Page<Aluno> findByNomeNormalizadoContainingIgnoreCase(String nomeNormalizado, Pageable pageable);
 
 }

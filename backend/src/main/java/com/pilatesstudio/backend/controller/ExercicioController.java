@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 
 
 @RestController
@@ -28,10 +29,10 @@ public class ExercicioController {
     @GetMapping
     public Page<ExercicioResponseDTO> listar(
             @RequestParam(required = false) String nome,
-            @RequestParam(required = false) String nivel,
-            @RequestParam(required = false) String aparelho,
-            @RequestParam(required = false) String regiaoCorporal,
-            @RequestParam(required = false) String focoMuscular,
+            @RequestParam(required = false) List<String> nivel,
+            @RequestParam(required = false) List<String> aparelho,
+            @RequestParam(required = false) List<String> regiaoCorporal,
+            @RequestParam(required = false) List<String> focoMuscular,
             Pageable pageable
     ) {
         return exercicioService.listar(

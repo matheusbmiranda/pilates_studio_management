@@ -92,7 +92,10 @@ export async function listarExercicios(
     size: number = 15,
     nome?: string,
     sort?: string,
-    nivel?: string,
+    nivel?: string[],
+    aparelhos?: string[],
+    regioesCorporais?: string[],
+    focosMusculares?: string[],
 ): Promise<ExercicioPage> {
 
   const params = new URLSearchParams({
@@ -108,8 +111,28 @@ export async function listarExercicios(
     params.append('sort', sort);
   }
 
-  if (nivel) {
-    params.append('nivel', nivel);
+  if (nivel && nivel.length > 0) {
+    nivel.forEach((valor) => {
+      params.append('nivel', valor);
+    });
+  }
+
+  if (aparelhos && aparelhos.length > 0) {
+    aparelhos.forEach((valor) => {
+      params.append('aparelho', valor);
+    });
+  }
+
+  if (regioesCorporais && regioesCorporais.length > 0) {
+    regioesCorporais.forEach((valor) => {
+      params.append('regiaoCorporal', valor);
+    });
+  }
+
+  if (focosMusculares && focosMusculares.length > 0) {
+    focosMusculares.forEach((valor) => {
+      params.append('focoMuscular', valor);
+    });
   }
 
   return requestJson<ExercicioPage>(

@@ -50,7 +50,10 @@ export default function ExerciciosScreen() {
   const [ordenacao, setOrdenacao] = useState<Ordenacao>('Nome A-Z');
   const [mostrarOrdenacao, setMostrarOrdenacao] = useState(false);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-  const [nivelFiltro, setNivelFiltro] = useState<string | undefined>();
+  const [nivelFiltro, setNivelFiltro] = useState<string[]>([]);
+  const [aparelhoFiltro, setAparelhoFiltro] = useState<string[]>([]);
+  const [regiaoCorporalFiltro, setRegiaoCorporalFiltro] = useState<string[]>([]);
+  const [focoMuscularFiltro, setFocoMuscularFiltro] = useState<string[]>([]);
 
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -69,7 +72,10 @@ export default function ExerciciosScreen() {
       termoBusca: string,
       substituir: boolean,
       ordenacaoAtual: Ordenacao = ordenacao,
-      nivelAtual: string | undefined = nivelFiltro,
+      nivelAtual: string[] = nivelFiltro,
+      aparelhoAtual: string[] = aparelhoFiltro,
+      regiaoCorporalAtual: string[] = regiaoCorporalFiltro,
+      focoMuscularAtual: string[] = focoMuscularFiltro,
   ) {
     if (carregandoRef.current) {
       return;
@@ -98,6 +104,9 @@ export default function ExerciciosScreen() {
           termoBusca,
           ordenacaoParaApi[ordenacaoAtual],
           nivelAtual,
+          aparelhoAtual,
+          regiaoCorporalAtual,
+          focoMuscularAtual,
       );
 
       // Ignora uma resposta antiga caso uma busca mais recente
@@ -146,7 +155,7 @@ export default function ExerciciosScreen() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [busca, ordenacao, nivelFiltro]);
+  }, [busca, ordenacao, nivelFiltro, aparelhoFiltro, regiaoCorporalFiltro, focoMuscularFiltro,]);
 
   useEffect(() => {
     if (params.sucesso !== '1') {
@@ -281,20 +290,141 @@ export default function ExerciciosScreen() {
                         ].map(([label, value]) => (
                             <Pressable
                                 key={value}
-                                onPress={() =>
-                                    setNivelFiltro((atual) =>
-                                        atual === value ? undefined : value
-                                    )
-                                }
+                                onPress={() => {
+                                  setNivelFiltro((atual) =>
+                                      atual.includes(value)
+                                          ? atual.filter((nivel) => nivel !== value)
+                                          : [...atual, value]
+                                  );
+                                }}
                                 style={[
                                   styles.filterOption,
-                                  nivelFiltro === value && styles.filterOptionSelected,
+                                  nivelFiltro.includes(value) && styles.filterOptionSelected,
                                 ]}
                             >
                               <Text
                                   style={[
                                     styles.filterOptionText,
-                                    nivelFiltro === value &&
+                                    nivelFiltro.includes(value) &&
+                                    styles.filterOptionTextSelected,
+                                  ]}
+                              >
+                                {label}
+                              </Text>
+                            </Pressable>
+                        ))}
+                      </View>
+
+                      <Text style={styles.filterSectionTitle}>Aparelho</Text>
+
+                      <View style={styles.filterOptions}>
+                        {[
+                          ['Barrel', 'BARREL'],
+                          ['Chair', 'CHAIR'],
+                          ['Cadillac', 'CADILLAC'],
+                          ['Reformer', 'REFORMER'],
+                          ['Torre', 'TORRE'],
+                          ['Mat', 'MAT'],
+                        ].map(([label, value]) => (
+                            <Pressable
+                                key={value}
+                                onPress={() => {
+                                  setAparelhoFiltro((atual) =>
+                                      atual.includes(value)
+                                          ? atual.filter((aparelho) => aparelho !== value)
+                                          : [...atual, value]
+                                  );
+                                }}
+                                style={[
+                                  styles.filterOption,
+                                  aparelhoFiltro.includes(value) &&
+                                  styles.filterOptionSelected,
+                                ]}
+                            >
+                              <Text
+                                  style={[
+                                    styles.filterOptionText,
+                                    aparelhoFiltro.includes(value) &&
+                                    styles.filterOptionTextSelected,
+                                  ]}
+                              >
+                                {label}
+                              </Text>
+                            </Pressable>
+                        ))}
+                      </View>
+
+                      <Text style={styles.filterSectionTitle}>Região corporal</Text>
+
+                      <View style={styles.filterOptions}>
+                        {[
+                          ['Coluna cervical', 'COLUNA_CERVICAL'],
+                          ['Coluna torácica', 'COLUNA_TORACICA'],
+                          ['Coluna lombar', 'COLUNA_LOMBAR'],
+                          ['Membros inferiores', 'MEMBROS_INFERIORES'],
+                          ['Membros superiores', 'MEMBROS_SUPERIORES'],
+                          ['Abdômen / Core', 'ABDOMEN_CORE'],
+                          ['Pelve', 'PELVE'],
+                          ['Quadril', 'QUADRIL'],
+                          ['Glúteo', 'GLUTEO'],
+                          ['Corpo inteiro', 'CORPO_INTEIRO'],
+                        ].map(([label, value]) => (
+                            <Pressable
+                                key={value}
+                                onPress={() => {
+                                  setRegiaoCorporalFiltro((atual) =>
+                                      atual.includes(value)
+                                          ? atual.filter((regiao) => regiao !== value)
+                                          : [...atual, value]
+                                  );
+                                }}
+                                style={[
+                                  styles.filterOption,
+                                  regiaoCorporalFiltro.includes(value) &&
+                                  styles.filterOptionSelected,
+                                ]}
+                            >
+                              <Text
+                                  style={[
+                                    styles.filterOptionText,
+                                    regiaoCorporalFiltro.includes(value) &&
+                                    styles.filterOptionTextSelected,
+                                  ]}
+                              >
+                                {label}
+                              </Text>
+                            </Pressable>
+                        ))}
+                      </View>
+
+                      <Text style={styles.filterSectionTitle}>Foco muscular</Text>
+
+                      <View style={styles.filterOptions}>
+                        {[
+                          ['Alongamento', 'ALONGAMENTO'],
+                          ['Mobilidade', 'MOBILIDADE'],
+                          ['Fortalecimento', 'FORTALECIMENTO'],
+                          ['Respiração', 'RESPIRACAO'],
+                        ].map(([label, value]) => (
+                            <Pressable
+                                key={value}
+                                onPress={() => {
+                                  setFocoMuscularFiltro((atual) =>
+                                      atual.includes(value)
+                                          ? atual.filter((foco) => foco !== value)
+                                          : [...atual, value]
+                                  );
+                                }}
+                                style={[
+                                  styles.filterOption,
+                                  focoMuscularFiltro.includes(value) &&
+                                  styles.filterOptionSelected,
+                                ]}
+                            >
+                              <Text
+                                  style={[
+                                    styles.filterOptionText,
+                                    focoMuscularFiltro.includes(value) &&
                                     styles.filterOptionTextSelected,
                                   ]}
                               >
@@ -305,7 +435,12 @@ export default function ExerciciosScreen() {
                       </View>
 
                       <Pressable
-                          onPress={() => setNivelFiltro(undefined)}
+                          onPress={() => {
+                            setNivelFiltro([]);
+                            setAparelhoFiltro([]);
+                            setRegiaoCorporalFiltro([]);
+                            setFocoMuscularFiltro([]);
+                          }}
                           style={styles.clearFilterButton}
                       >
                         <Text style={styles.clearFilterButtonText}>

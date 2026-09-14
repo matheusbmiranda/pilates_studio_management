@@ -57,10 +57,10 @@ public class ExercicioService {
 
     public Page<ExercicioResponseDTO> listar(
             String nome,
-            String nivel,
-            String aparelho,
-            String regiaoCorporal,
-            String focoMuscular,
+            List<String> nivel,
+            List<String> aparelho,
+            List<String> regiaoCorporal,
+            List<String> focoMuscular,
             Pageable pageable
     ) {
 
@@ -78,30 +78,30 @@ public class ExercicioService {
         }
 
         // Filtro por nível
-        if (nivel != null && !nivel.isBlank()) {
+        if (nivel != null && !nivel.isEmpty()) {
             query.addCriteria(
-                    Criteria.where("niveis").is(nivel)
+                    Criteria.where("niveis").in(nivel.toArray())
             );
         }
 
         // Filtro por aparelho
-        if (aparelho != null && !aparelho.isBlank()) {
+        if (aparelho != null && !aparelho.isEmpty()) {
             query.addCriteria(
-                    Criteria.where("aparelhos").is(aparelho)
+                    Criteria.where("aparelhos").in(aparelho.toArray())
             );
         }
 
         // Filtro por região corporal
-        if (regiaoCorporal != null && !regiaoCorporal.isBlank()) {
+        if (regiaoCorporal != null && !regiaoCorporal.isEmpty()) {
             query.addCriteria(
-                    Criteria.where("regioesCorporais").is(regiaoCorporal)
+                    Criteria.where("regioesCorporais").in(regiaoCorporal.toArray())
             );
         }
 
         // Filtro por foco muscular
-        if (focoMuscular != null && !focoMuscular.isBlank()) {
+        if (focoMuscular != null && !focoMuscular.isEmpty()) {
             query.addCriteria(
-                    Criteria.where("focosMusculares").is(focoMuscular)
+                    Criteria.where("focosMusculares").in(focoMuscular.toArray())
             );
         }
 

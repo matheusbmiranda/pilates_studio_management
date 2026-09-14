@@ -48,7 +48,11 @@ public class AlunoService {
         return alunoResponseDTO;
     }
 
-    public Page<AlunoResponseDTO> listar(String nome, Pageable pageable) {
+    public Page<AlunoResponseDTO> listar(
+            String nome,
+            String status,
+            Pageable pageable
+    ) {
 
         Page<Aluno> alunos;
 

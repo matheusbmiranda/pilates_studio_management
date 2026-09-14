@@ -25,10 +25,12 @@ public class AlunoController {
     }
 
     @GetMapping
-    public Page<AlunoResponseDTO> listarAlunos(@RequestParam(required = false) String nome, Pageable pageable) {
-
-        return alunoService.listar(nome, pageable);
-
+    public Page<AlunoResponseDTO> listarAlunos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String status,
+            Pageable pageable
+    ) {
+        return alunoService.listar(nome, status, pageable);
     }
 
     @GetMapping("/{id}")

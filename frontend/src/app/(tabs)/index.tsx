@@ -1,4 +1,4 @@
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import {
   FlatList,
@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabInset } from '@/constants/theme';
-import { assinarAlunosMockados, obterAlunosMockados } from '@/data/alunos';
+import { listarAlunos, type Aluno as AlunoApi } from '@/services/alunos-api';
 
 export interface Aluno {
   id: string;
@@ -24,18 +24,6 @@ export interface Aluno {
 type FiltroStatus = 'Todos' | Aluno['status'];
 type Ordenacao = 'Nome A-Z' | 'Nome Z-A' | 'Mais recentes' | 'Mais antigos';
 
-const alunosMockados: Aluno[] = [
-  { id: '1', nome: 'Ana Beatriz Costa', status: 'Ativo', telefone: '(11) 98765-4321', cadastradoEm: '2026-08-12' },
-  { id: '2', nome: 'Beatriz Almeida', status: 'Ativo', telefone: '(11) 99824-1076', cadastradoEm: '2026-07-28' },
-  { id: '3', nome: 'Camila Rodrigues', status: 'Inativo', telefone: '(11) 97654-1298', cadastradoEm: '2026-03-19' },
-  { id: '4', nome: 'Carolina Martins', status: 'Ativo', telefone: '(11) 98912-3645', cadastradoEm: '2026-08-03' },
-  { id: '5', nome: 'Fernanda Lima', status: 'Ativo', telefone: '(11) 99183-5072', cadastradoEm: '2026-06-15' },
-  { id: '6', nome: 'Gabriela Souza', status: 'Inativo', telefone: '(11) 96437-2189', cadastradoEm: '2026-02-10' },
-  { id: '7', nome: 'Juliana Ferreira', status: 'Ativo', telefone: '(11) 98245-7301', cadastradoEm: '2026-07-06' },
-  { id: '8', nome: 'Larissa Oliveira', status: 'Ativo', telefone: '(11) 97531-8642', cadastradoEm: '2026-05-21' },
-  { id: '9', nome: 'Mariana Santos', status: 'Inativo', telefone: '(11) 99374-6250', cadastradoEm: '2026-01-14' },
-  { id: '10', nome: 'Patrícia Gomes', status: 'Ativo', telefone: '(11) 98620-4517', cadastradoEm: '2026-08-18' },
-];
 
 const filtros: FiltroStatus[] = ['Todos', 'Ativo', 'Inativo'];
 const opcoesOrdenacao: Ordenacao[] = ['Nome A-Z', 'Nome Z-A', 'Mais recentes', 'Mais antigos'];
@@ -54,24 +42,34 @@ export default function AlunosScreen() {
   const [filtroStatus, setFiltroStatus] = useState<FiltroStatus>('Todos');
   const [ordenacao, setOrdenacao] = useState<Ordenacao>('Nome A-Z');
   const [mostrarOrdenacao, setMostrarOrdenacao] = useState(false);
-  const alunosMockados = useSyncExternalStore(assinarAlunosMockados, obterAlunosMockados, obterAlunosMockados);
+  const [alunos, setAlunos] = useState<AlunoApi[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
 
-  const alunos = useMemo(() => {
-    const termoBusca = busca.trim().toLocaleLowerCase('pt-BR');
+  useEffect(() => {
+    async function carregarAlunos() {
+      setCarregando(true);
+      setErro(null);
 
-    return alunosMockados
-      .filter((aluno) => filtroStatus === 'Todos' || aluno.status === filtroStatus)
-      .filter((aluno) => aluno.nome.toLocaleLowerCase('pt-BR').includes(termoBusca))
-      .sort((a, b) => {
-        if (ordenacao === 'Nome A-Z') return a.nome.localeCompare(b.nome, 'pt-BR');
-        if (ordenacao === 'Nome Z-A') return b.nome.localeCompare(a.nome, 'pt-BR');
-        if (ordenacao === 'Mais recentes') return b.cadastradoEm.localeCompare(a.cadastradoEm);
-        return a.cadastradoEm.localeCompare(b.cadastradoEm);
-      });
-  }, [alunosMockados, busca, filtroStatus, ordenacao]);
+      try {
+        const response = await listarAlunos(0, 15, busca);
+
+        setAlunos(response.content);
+      } catch (error) {
+        setErro(
+            error instanceof Error
+                ? error.message
+                : 'Não foi possível carregar os alunos.'
+        );
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarAlunos();
+  }, [busca]);
 
   // Quando houver paginação, adicionar onEndReached e onEndReachedThreshold à FlatList abaixo.
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
@@ -166,8 +164,14 @@ export default function AlunosScreen() {
   );
 }
 
-function AlunoCard({ aluno, onPress }: { aluno: Aluno; onPress: () => void }) {
-  const ativo = aluno.status === 'Ativo';
+function AlunoCard({
+                     aluno,
+                     onPress,
+                   }: {
+  aluno: AlunoApi;
+  onPress: () => void;
+}) {
+  const ativo = aluno.status === 'ATIVO';
 
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Editar ${aluno.nome}`} onPress={onPress} style={styles.card}>
@@ -179,7 +183,7 @@ function AlunoCard({ aluno, onPress }: { aluno: Aluno; onPress: () => void }) {
           <Text style={styles.studentName} numberOfLines={1}>{aluno.nome}</Text>
           <View style={[styles.statusBadge, ativo ? styles.statusActive : styles.statusInactive]}>
             <View style={[styles.statusDot, ativo ? styles.statusDotActive : styles.statusDotInactive]} />
-            <Text style={[styles.statusText, ativo ? styles.statusTextActive : styles.statusTextInactive]}>{aluno.status}</Text>
+            <Text style={[styles.statusText, ativo ? styles.statusTextActive : styles.statusTextInactive]}>{ativo ? 'Ativo' : 'Inativo'}</Text>
           </View>
         </View>
         <Text style={styles.phone}>{aluno.telefone}</Text>

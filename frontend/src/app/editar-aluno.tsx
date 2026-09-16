@@ -4,29 +4,117 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  atualizarAlunoMockado,
-  obterAlunoMockado,
-  obterAulasDoAlunoMockadas,
-  type Aluno,
-  type AulaAluno,
-  type StatusAluno,
-} from '@/data/alunos';
+  buscarAlunoPorId,
+  atualizarAluno,
+  type Aluno as AlunoApi,
+  type AlunoRequest,
+} from '@/services/alunos-api';
+import {obterAulasDoAlunoMockadas, type AulaAluno,} from '@/data/alunos';
+
+type StatusAluno = 'Ativo' | 'Inativo';
 
 const statusOpcoes: StatusAluno[] = ['Ativo', 'Inativo'];
+
+function formatarDataParaTela(data: string) {
+  if (!data) {
+    return '';
+  }
+
+  const [ano, mes, dia] = data.split('-');
+
+  if (!ano || !mes || !dia) {
+    return data;
+  }
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatarDataParaApi(data: string) {
+  const [dia, mes, ano] = data.split('/');
+
+  return `${ano}-${mes}-${dia}`;
+}
+
+function formatarDataNascimento(texto: string) {
+  const numeros = texto.replace(/\D/g, '').slice(0, 8);
+
+  if (numeros.length <= 2) {
+    return numeros;
+  }
+
+  if (numeros.length <= 4) {
+    return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
+  }
+
+  return `${numeros.slice(0, 2)}/${numeros.slice(2, 4)}/${numeros.slice(4)}`;
+}
+
+function formatarTelefone(texto: string) {
+  const numeros = texto.replace(/\D/g, '').slice(0, 11);
+
+  if (numeros.length <= 2) {
+    return numeros.length > 0 ? `(${numeros}` : '';
+  }
+
+  if (numeros.length <= 7) {
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+  }
+
+  return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+}
 
 export default function EditarAlunoScreen() {
   const router = useRouter();
   const { alunoId } = useLocalSearchParams<{ alunoId?: string }>();
-  const aluno = typeof alunoId === 'string' ? obterAlunoMockado(alunoId) : undefined;
-  const [formulario, setFormulario] = useState<Aluno | undefined>(aluno);
+
+  const [formulario, setFormulario] = useState<AlunoApi | undefined>();
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+
   const [historicoAberto, setHistoricoAberto] = useState(false);
   const [aulaAbertaId, setAulaAbertaId] = useState<string | null>(null);
 
   useEffect(() => {
-    setFormulario(aluno);
-    setHistoricoAberto(false);
-    setAulaAbertaId(null);
+    async function carregarAluno() {
+      if (typeof alunoId !== 'string') {
+        setFormulario(undefined);
+        setCarregando(false);
+        return;
+      }
+
+      setCarregando(true);
+
+      try {
+        const aluno = await buscarAlunoPorId(alunoId);
+
+        setFormulario({
+          ...aluno,
+          dataNascimento: formatarDataParaTela(aluno.dataNascimento),
+          telefone: formatarTelefone(aluno.telefone),
+        });
+
+        setHistoricoAberto(false);
+        setAulaAbertaId(null);
+      } catch (error) {
+        console.error(error);
+        setFormulario(undefined);
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarAluno();
   }, [alunoId]);
+
+  if (carregando) {
+    return (
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <View style={styles.notFound}>
+            <Text style={styles.title}>Carregando aluno...</Text>
+          </View>
+        </SafeAreaView>
+    );
+  }
 
   if (!formulario) {
     return (
@@ -42,13 +130,48 @@ export default function EditarAlunoScreen() {
   }
 
   const aulas = obterAulasDoAlunoMockadas(formulario.id);
-  const atualizarCampo = <Campo extends keyof Aluno>(campo: Campo, valor: Aluno[Campo]) => {
-    setFormulario((atual) => atual ? { ...atual, [campo]: valor } : atual);
+
+  const atualizarCampo = <Campo extends keyof AlunoApi>(
+      campo: Campo,
+      valor: AlunoApi[Campo],
+  ) => {
+    setFormulario((atual) =>
+        atual
+            ? { ...atual, [campo]: valor }
+            : atual
+    );
   };
-  const salvar = () => {
-    atualizarAlunoMockado(formulario);
-    router.back();
-  };
+
+  async function salvar() {
+    if (!alunoId || typeof alunoId !== 'string') {
+      return;
+    }
+
+    if (!formulario) {
+      return;
+    }
+
+    setSalvando(true);
+
+    try {
+      const dados: AlunoRequest = {
+        nome: formulario.nome,
+        dataNascimento: formatarDataParaApi(formulario.dataNascimento),
+        telefone: formulario.telefone,
+        email: formulario.email,
+        status: formulario.status,
+        observacoes: formulario.observacoes ?? '',
+      };
+
+      await atualizarAluno(alunoId, dados);
+
+      router.back();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -66,17 +189,25 @@ export default function EditarAlunoScreen() {
 
           <View style={styles.form}>
             <FormField label="Nome completo" value={formulario.nome} onChangeText={(valor) => atualizarCampo('nome', valor)} />
-            <FormField label="Data de nascimento" value={formulario.dataNascimento} keyboardType="numeric" onChangeText={(valor) => atualizarCampo('dataNascimento', valor)} />
-            <FormField label="Telefone" value={formulario.telefone} keyboardType="phone-pad" onChangeText={(valor) => atualizarCampo('telefone', valor)} />
+            <FormField label="Data de nascimento" value={formulario.dataNascimento} keyboardType="numeric" onChangeText={(valor) => atualizarCampo('dataNascimento', formatarDataNascimento(valor),)}/>
+            <FormField label="Telefone" value={formulario.telefone} keyboardType="phone-pad" onChangeText={(valor) => atualizarCampo('telefone', formatarTelefone(valor),)}/>
             <FormField label="E-mail" value={formulario.email} autoCapitalize="none" keyboardType="email-address" onChangeText={(valor) => atualizarCampo('email', valor)} />
 
             <View>
               <Text style={styles.label}>Status</Text>
               <View style={styles.statusGroup}>
                 {statusOpcoes.map((opcao) => {
-                  const selecionado = formulario.status === opcao;
+                  const selecionado = formulario.status === opcao.toUpperCase();
                   return (
-                    <Pressable key={opcao} accessibilityRole="button" onPress={() => atualizarCampo('status', opcao)} style={[styles.statusButton, selecionado && styles.statusButtonSelected]}>
+                      <Pressable
+                          key={opcao}
+                          accessibilityRole="button"
+                          onPress={() => atualizarCampo('status', opcao.toUpperCase())}
+                          style={[
+                            styles.statusButton,
+                            selecionado && styles.statusButtonSelected,
+                          ]}
+                      >
                       <View style={[styles.statusDot, opcao === 'Ativo' ? styles.activeDot : styles.inactiveDot]} />
                       <Text style={[styles.statusText, selecionado && styles.statusTextSelected]}>{opcao}</Text>
                     </Pressable>
@@ -87,7 +218,16 @@ export default function EditarAlunoScreen() {
 
             <View>
               <Text style={styles.label}>Observações</Text>
-              <TextInput multiline numberOfLines={5} value={formulario.observacoes} onChangeText={(valor) => atualizarCampo('observacoes', valor)} placeholder="Adicione informações importantes sobre o aluno..." placeholderTextColor="#8B949E" style={[styles.input, styles.notesInput]} textAlignVertical="top" />
+              <TextInput
+                  multiline
+                  numberOfLines={5}TEste
+                  value={formulario.observacoes ?? ''}
+                  onChangeText={(valor) => atualizarCampo('observacoes', valor)}
+                  placeholder="Adicione informações importantes sobre o aluno..."
+                  placeholderTextColor="#8B949E"
+                  style={[styles.input, styles.notesInput]}
+                  textAlignVertical="top"
+              />
             </View>
 
             <HistoricoAulas
@@ -98,8 +238,15 @@ export default function EditarAlunoScreen() {
               onToggleAula={(id) => setAulaAbertaId((atual) => atual === id ? null : id)}
             />
 
-            <Pressable accessibilityRole="button" onPress={salvar} style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Salvar alterações</Text>
+            <Pressable
+                accessibilityRole="button"
+                onPress={salvar}
+                style={styles.submitButton}
+                disabled={salvando}
+            >
+              <Text style={styles.submitButtonText}>
+                {salvando ? 'Salvando...' : 'Salvar alterações'}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>

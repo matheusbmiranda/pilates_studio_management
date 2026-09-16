@@ -3,6 +3,7 @@ package com.pilatesstudio.backend.service;
 import com.pilatesstudio.backend.dto.AlunoRequestDTO;
 import com.pilatesstudio.backend.dto.AlunoResponseDTO;
 import com.pilatesstudio.backend.model.entity.Aluno;
+import com.pilatesstudio.backend.model.enums.StatusAluno;
 import com.pilatesstudio.backend.repository.AlunoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -56,19 +57,52 @@ public class AlunoService {
 
         Page<Aluno> alunos;
 
-        if (nome == null || nome.isBlank()) {
-            alunos = alunoRepository.findAll(pageable);
-        } else {
+        boolean temNome = nome != null && !nome.isBlank();
+        boolean temStatus = status != null && !status.isBlank();
+
+        if (temNome) {
 
             String nomeNormalizado = Normalizer.normalize(
                     nome,
                     Normalizer.Form.NFD
             ).replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT);
 
-            alunos = alunoRepository.findByNomeNormalizadoContainingIgnoreCase(
-                    nomeNormalizado,
+            if (temStatus) {
+
+                StatusAluno statusEnum = StatusAluno.valueOf(
+                        status.toUpperCase(Locale.ROOT)
+                );
+
+                alunos = alunoRepository
+                        .findByNomeNormalizadoContainingIgnoreCaseAndStatus(
+                                nomeNormalizado,
+                                statusEnum,
+                                pageable
+                        );
+
+            } else {
+
+                alunos = alunoRepository
+                        .findByNomeNormalizadoContainingIgnoreCase(
+                                nomeNormalizado,
+                                pageable
+                        );
+            }
+
+        } else if (temStatus) {
+
+            StatusAluno statusEnum = StatusAluno.valueOf(
+                    status.toUpperCase(Locale.ROOT)
+            );
+
+            alunos = alunoRepository.findByStatus(
+                    statusEnum,
                     pageable
             );
+
+        } else {
+
+            alunos = alunoRepository.findAll(pageable);
         }
 
         return alunos.map(aluno -> {
@@ -85,7 +119,6 @@ public class AlunoService {
 
             return response;
         });
-
     }
 
     public AlunoResponseDTO buscarPorId(String id) {

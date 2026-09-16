@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { criarAluno } from '@/services/alunos-api';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,6 +9,67 @@ type StatusAluno = 'Ativo' | 'Inativo';
 export default function CadastrarAlunoScreen() {
   const router = useRouter();
   const [status, setStatus] = useState<StatusAluno>('Ativo');
+  const [nome, setNome] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [email, setEmail] = useState('');
+  const [observacoes, setObservacoes] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  function formatarTelefone(texto: string) {
+    const numeros = texto.replace(/\D/g, '').slice(0, 11);
+
+    if (numeros.length <= 2) {
+      return numeros.length > 0 ? `(${numeros}` : '';
+    }
+
+    if (numeros.length <= 7) {
+      return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+    }
+
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+  }
+
+  function formatarDataNascimento(texto: string) {
+    const numeros = texto.replace(/\D/g, '').slice(0, 8);
+
+    if (numeros.length <= 2) {
+      return numeros;
+    }
+
+    if (numeros.length <= 4) {
+      return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
+    }
+
+    return `${numeros.slice(0, 2)}/${numeros.slice(2, 4)}/${numeros.slice(4)}`;
+  }
+
+  function formatarDataParaApi(data: string) {
+    const [dia, mes, ano] = data.split('/');
+
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  async function cadastrar() {
+    setSalvando(true);
+
+    try {
+      await criarAluno({
+        nome,
+        dataNascimento: formatarDataParaApi(dataNascimento),
+        telefone,
+        email,
+        status: status.toUpperCase(),
+        observacoes,
+      });
+
+      router.back();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -34,10 +96,10 @@ export default function CadastrarAlunoScreen() {
           </View>
 
           <View style={styles.form}>
-            <FormField label="Nome completo" placeholder="Digite o nome completo" />
-            <FormField label="Data de nascimento" placeholder="DD/MM/AAAA" keyboardType="numeric" />
-            <FormField label="Telefone" placeholder="(00) 00000-0000" keyboardType="phone-pad" />
-            <FormField label="E-mail" placeholder="nome@email.com" keyboardType="email-address" autoCapitalize="none" />
+            <FormField label="Nome completo" placeholder="Digite o nome completo" value={nome} onChangeText={setNome}/>
+            <FormField label="Data de nascimento" placeholder="DD/MM/AAAA" keyboardType="numeric" value={dataNascimento} onChangeText={(texto) => setDataNascimento(formatarDataNascimento(texto))}/>
+            <FormField label="Telefone" placeholder="(00) 00000-0000" keyboardType="phone-pad" value={telefone} onChangeText={(texto) => setTelefone(formatarTelefone(texto))}/>
+            <FormField label="E-mail" placeholder="nome@email.com" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail}/>
 
             <View>
               <Text style={styles.label}>Status</Text>
@@ -63,6 +125,8 @@ export default function CadastrarAlunoScreen() {
               <TextInput
                 multiline
                 numberOfLines={5}
+                value={observacoes}
+                onChangeText={setObservacoes}
                 placeholder="Adicione informações importantes sobre o aluno..."
                 placeholderTextColor="#8B949E"
                 style={[styles.input, styles.notesInput]}
@@ -70,8 +134,15 @@ export default function CadastrarAlunoScreen() {
               />
             </View>
 
-            <Pressable accessibilityRole="button" style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Cadastrar</Text>
+            <Pressable
+                accessibilityRole="button"
+                style={styles.submitButton}
+                onPress={cadastrar}
+                disabled={salvando}
+            >
+              <Text style={styles.submitButtonText}>
+                {salvando ? 'Cadastrando...' : 'Cadastrar'}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -81,16 +152,21 @@ export default function CadastrarAlunoScreen() {
 }
 
 function FormField({
-  label,
-  placeholder,
-  keyboardType,
-  autoCapitalize,
-}: {
+                     label,
+                     placeholder,
+                     keyboardType,
+                     autoCapitalize,
+                     value,
+                     onChangeText,
+                   }: {
   label: string;
   placeholder: string;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none';
+  value?: string;
+  onChangeText?: (text: string) => void;
 }) {
+
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -100,6 +176,8 @@ function FormField({
         placeholder={placeholder}
         placeholderTextColor="#8B949E"
         style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );

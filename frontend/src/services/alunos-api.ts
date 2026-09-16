@@ -22,10 +22,33 @@ export type AlunoPage = {
     empty: boolean;
 };
 
+export type AlunoRequest = {
+    nome: string;
+    dataNascimento: string;
+    telefone: string;
+    email: string;
+    status: string;
+    observacoes?: string;
+};
+
+export async function criarAluno(
+    aluno: AlunoRequest,
+): Promise<Aluno> {
+    return requestJson<Aluno>('/alunos', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(aluno),
+    });
+}
+
 export async function listarAlunos(
     page: number = 0,
     size: number = 15,
     nome?: string,
+    status?: string,
+    sort?: string,
 ): Promise<AlunoPage> {
 
     const params = new URLSearchParams({
@@ -37,10 +60,37 @@ export async function listarAlunos(
         params.append('nome', nome.trim());
     }
 
+    if (status && status.trim()) {
+        params.append('status', status.trim());
+    }
+
+    if (sort && sort.trim()) {
+        params.append('sort', sort.trim());
+    }
+
     return requestJson<AlunoPage>(
         `/alunos?${params.toString()}`,
         {},
     );
+}
+
+export async function buscarAlunoPorId(
+    id: string,
+): Promise<Aluno> {
+    return requestJson<Aluno>(`/alunos/${id}`, {});
+}
+
+export async function atualizarAluno(
+    id: string,
+    aluno: AlunoRequest,
+): Promise<Aluno> {
+    return requestJson<Aluno>(`/alunos/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(aluno),
+    });
 }
 
 async function requestJson<T = unknown>(

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { type Href, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import {
   FlatList,
   Pressable,
@@ -45,31 +45,88 @@ export default function AlunosScreen() {
   const [alunos, setAlunos] = useState<AlunoApi[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [pagina, setPagina] = useState(0);
+  const [ultimaPagina, setUltimaPagina] = useState(false);
+  const [carregandoMais, setCarregandoMais] = useState(false);
+  const sort =
+      ordenacao === 'Nome A-Z'
+          ? 'nome,asc'
+          : ordenacao === 'Nome Z-A'
+              ? 'nome,desc'
+              : ordenacao === 'Mais recentes'
+                  ? 'id,desc'
+                  : 'id,asc';
 
-  useEffect(() => {
-    async function carregarAlunos() {
-      setCarregando(true);
-      setErro(null);
+  useFocusEffect(
+      useCallback(() => {
+        async function carregarAlunos() {
+          setCarregando(true);
+          setErro(null);
+          setPagina(0);
+          setUltimaPagina(false);
 
-      try {
-        const response = await listarAlunos(0, 15, busca);
+          try {
+            const response = await listarAlunos(
+                0,
+                15,
+                busca,
+                filtroStatus === 'Todos' ? undefined : filtroStatus,
+                sort,
+            );
 
-        setAlunos(response.content);
-      } catch (error) {
-        setErro(
-            error instanceof Error
-                ? error.message
-                : 'Não foi possível carregar os alunos.'
-        );
-      } finally {
-        setCarregando(false);
-      }
+            setAlunos(response.content);
+            setUltimaPagina(response.last);
+          } catch (error) {
+            setErro(
+                error instanceof Error
+                    ? error.message
+                    : 'Não foi possível carregar os alunos.'
+            );
+          } finally {
+            setCarregando(false);
+          }
+        }
+
+        carregarAlunos();
+      }, [busca, filtroStatus, sort])
+  );
+
+  async function carregarMaisAlunos() {
+    if (carregandoMais || ultimaPagina || carregando) {
+      return;
     }
 
-    carregarAlunos();
-  }, [busca]);
+    setCarregandoMais(true);
 
-  // Quando houver paginação, adicionar onEndReached e onEndReachedThreshold à FlatList abaixo.
+    try {
+      const proximaPagina = pagina + 1;
+
+      const response = await listarAlunos(
+          proximaPagina,
+          15,
+          busca,
+          filtroStatus === 'Todos' ? undefined : filtroStatus,
+          sort,
+      );
+
+      setAlunos((alunosAtuais) => [
+        ...alunosAtuais,
+        ...response.content,
+      ]);
+
+      setPagina(proximaPagina);
+      setUltimaPagina(response.last);
+    } catch (error) {
+      setErro(
+          error instanceof Error
+              ? error.message
+              : 'Não foi possível carregar mais alunos.'
+      );
+    } finally {
+      setCarregandoMais(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
@@ -83,6 +140,8 @@ export default function AlunosScreen() {
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        onEndReached={carregarMaisAlunos}
+        onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <View style={styles.headerContent}>
             <View style={styles.topBar}>
@@ -158,7 +217,17 @@ export default function AlunosScreen() {
             <Text style={styles.resultCount}>{alunos.length} {alunos.length === 1 ? 'aluno encontrado' : 'alunos encontrados'}</Text>
           </View>
         }
+
         ListEmptyComponent={<Text style={styles.emptyText}>Nenhum aluno encontrado.</Text>}
+
+        ListFooterComponent={
+          carregandoMais ? (
+              <Text style={styles.loadingMoreText}>
+                Carregando mais alunos...
+              </Text>
+          ) : null
+        }
+
       />
     </SafeAreaView>
   );
@@ -248,4 +317,5 @@ const styles = StyleSheet.create({
   statusTextInactive: { color: '#6E7370' },
   phone: { color: '#6C7670', fontSize: 14, marginTop: 6 },
   emptyText: { color: '#737D77', fontSize: 15, paddingTop: 28, textAlign: 'center' },
+  loadingMoreText: {textAlign: 'center', paddingVertical: 16,},
 });

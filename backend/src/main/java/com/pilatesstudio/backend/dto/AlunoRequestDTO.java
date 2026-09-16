@@ -19,13 +19,13 @@ public class AlunoRequestDTO {
     @NotNull(message = "Preencha a data de nascimento.")
     private LocalDate dataNascimento;
 
-    @NotBlank(message = "O telefone não pode estar vazio")
+    @NotBlank(message = "O telefone não pode estar vazio.")
     private String telefone;
 
     @Email(message = "E-mail inválido.")
     private String email;
 
-    @NotNull(message = "Selecione o status")
+    @NotNull(message = "Selecione o status.")
     private StatusAluno status;
 
     private String observacoes;

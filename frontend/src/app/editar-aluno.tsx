@@ -220,7 +220,7 @@ export default function EditarAlunoScreen() {
               <Text style={styles.label}>Observações</Text>
               <TextInput
                   multiline
-                  numberOfLines={5}TEste
+                  numberOfLines={5}
                   value={formulario.observacoes ?? ''}
                   onChangeText={(valor) => atualizarCampo('observacoes', valor)}
                   placeholder="Adicione informações importantes sobre o aluno..."

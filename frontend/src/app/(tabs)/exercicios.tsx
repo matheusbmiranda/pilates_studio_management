@@ -57,42 +57,24 @@ export default function ExerciciosScreen() {
 
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [carregandoMais, setCarregandoMais] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [ultimo, setUltimo] = useState(false);
   const [totalElementos, setTotalElementos] = useState(0);
 
-  const paginaAtualRef = useRef(0);
-  const carregandoRef = useRef(false);
-  const ultimoRef = useRef(false);
+  const [paginaAtual, setPaginaAtual] = useState(0);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+
   const requisicaoRef = useRef(0);
 
   async function carregarPagina(
       pagina: number,
       termoBusca: string,
-      substituir: boolean,
       ordenacaoAtual: Ordenacao = ordenacao,
       nivelAtual: string[] = nivelFiltro,
       aparelhoAtual: string[] = aparelhoFiltro,
       regiaoCorporalAtual: string[] = regiaoCorporalFiltro,
       focoMuscularAtual: string[] = focoMuscularFiltro,
   ) {
-    if (carregandoRef.current) {
-      return;
-    }
-
-    if (!substituir && ultimoRef.current) {
-      return;
-    }
-
-    carregandoRef.current = true;
-
-    if (substituir) {
-      setCarregando(true);
-    } else {
-      setCarregandoMais(true);
-    }
-
+    setCarregando(true);
     setErro(null);
 
     const requisicaoAtual = ++requisicaoRef.current;
@@ -109,23 +91,20 @@ export default function ExerciciosScreen() {
           focoMuscularAtual,
       );
 
-      // Ignora uma resposta antiga caso uma busca mais recente
-      // já tenha sido realizada.
       if (requisicaoAtual !== requisicaoRef.current) {
         return;
       }
 
-      setExercicios((exerciciosAtuais) =>
-          substituir
-              ? response.content
-              : [...exerciciosAtuais, ...response.content],
+      setExercicios(response.content);
+      setTotalElementos(response.totalElements);
+
+      const paginas = Math.max(
+          1,
+          Math.ceil(response.totalElements / TAMANHO_PAGINA),
       );
 
-      setTotalElementos(response.totalElements);
-      setUltimo(response.last);
-
-      paginaAtualRef.current = pagina;
-      ultimoRef.current = response.last;
+      setTotalPaginas(paginas);
+      setPaginaAtual(pagina);
     } catch (error) {
       if (requisicaoAtual !== requisicaoRef.current) {
         return;
@@ -139,23 +118,25 @@ export default function ExerciciosScreen() {
       setErro(mensagem);
     } finally {
       if (requisicaoAtual === requisicaoRef.current) {
-        carregandoRef.current = false;
         setCarregando(false);
-        setCarregandoMais(false);
       }
     }
   }
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      paginaAtualRef.current = 0;
-      ultimoRef.current = false;
-
-      carregarPagina(0, busca, true);
+      carregarPagina(0, busca);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [busca, ordenacao, nivelFiltro, aparelhoFiltro, regiaoCorporalFiltro, focoMuscularFiltro,]);
+  }, [
+    busca,
+    ordenacao,
+    nivelFiltro,
+    aparelhoFiltro,
+    regiaoCorporalFiltro,
+    focoMuscularFiltro,
+  ]);
 
   useEffect(() => {
     if (params.sucesso !== '1') {
@@ -164,10 +145,7 @@ export default function ExerciciosScreen() {
 
     setMensagemSucesso(true);
 
-    paginaAtualRef.current = 0;
-    ultimoRef.current = false;
-
-    carregarPagina(0, busca, true);
+    carregarPagina(0, busca);
 
     const timer = setTimeout(() => {
       setMensagemSucesso(false);
@@ -176,21 +154,8 @@ export default function ExerciciosScreen() {
     return () => clearTimeout(timer);
   }, [params.sucesso]);
 
-  function carregarMais() {
-    if (carregandoRef.current || ultimoRef.current) {
-      return;
-    }
-
-    const proximaPagina = paginaAtualRef.current + 1;
-
-    carregarPagina(proximaPagina, busca, false);
-  }
-
   function recarregar() {
-    paginaAtualRef.current = 0;
-    ultimoRef.current = false;
-
-    carregarPagina(0, busca, true);
+    carregarPagina(paginaAtual, busca);
   }
 
   return (
@@ -211,8 +176,6 @@ export default function ExerciciosScreen() {
             )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
-            onEndReached={carregarMais}
-            onEndReachedThreshold={0.4}
             ListHeaderComponent={
               <View style={styles.headerContent}>
                 <View style={styles.topBar}>
@@ -518,12 +481,65 @@ export default function ExerciciosScreen() {
               </View>
             }
             ListFooterComponent={
-              carregandoMais ? (
-                  <View style={styles.footerLoading}>
-                    <ActivityIndicator
-                        size="small"
-                        color="#276749"
-                    />
+              totalPaginas > 1 ? (
+                  <View style={styles.paginationContainer}>
+                    <Pressable
+                        onPress={() => {
+                          if (paginaAtual > 0) {
+                            carregarPagina(
+                                paginaAtual - 1,
+                                busca,
+                                ordenacao,
+                                nivelFiltro,
+                                aparelhoFiltro,
+                                regiaoCorporalFiltro,
+                                focoMuscularFiltro,
+                            );
+                          }
+                        }}
+                        disabled={paginaAtual === 0 || carregando}
+                        style={[
+                          styles.paginationButton,
+                          (paginaAtual === 0 || carregando) &&
+                          styles.paginationButtonDisabled,
+                        ]}
+                    >
+                      <Text style={styles.paginationButtonText}>
+                        ← Anterior
+                      </Text>
+                    </Pressable>
+
+                    <Text style={styles.paginationText}>
+                      Página {paginaAtual + 1} de {totalPaginas}
+                    </Text>
+
+                    <Pressable
+                        onPress={() => {
+                          if (paginaAtual < totalPaginas - 1) {
+                            carregarPagina(
+                                paginaAtual + 1,
+                                busca,
+                                ordenacao,
+                                nivelFiltro,
+                                aparelhoFiltro,
+                                regiaoCorporalFiltro,
+                                focoMuscularFiltro,
+                            );
+                          }
+                        }}
+                        disabled={
+                            paginaAtual === totalPaginas - 1 || carregando
+                        }
+                        style={[
+                          styles.paginationButton,
+                          (paginaAtual === totalPaginas - 1 || carregando) &&
+                          styles.paginationButtonDisabled,
+                        ]}
+                    >
+                      <Text style={styles.paginationButtonText}>
+                        Próxima →
+                      </Text>
+                    </Pressable>
                   </View>
               ) : null
             }
@@ -919,11 +935,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  footerLoading: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-
   successMessage: {
     backgroundColor: '#E3F0E8',
     borderColor: '#B8D8C3',
@@ -1003,5 +1014,36 @@ const styles = StyleSheet.create({
     color: '#276749',
     fontSize: 13,
     fontWeight: '700',
+  },
+
+  paginationContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingVertical: 16,
+  },
+
+  paginationButton: {
+    backgroundColor: '#E9EEEA',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+
+  paginationButtonDisabled: {
+    opacity: 0.4,
+  },
+
+  paginationButtonText: {
+    color: '#276749',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  paginationText: {
+    color: '#737D77',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

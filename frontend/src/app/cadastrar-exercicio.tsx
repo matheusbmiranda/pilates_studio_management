@@ -9,12 +9,40 @@ import { criarExercicio, uploadImagemExercicio, type ExercicioRequest } from '@/
 
 const niveis = ['Iniciante', 'Intermediário', 'Avançado', 'Gestante'];
 const aparelhos = ['Barrel', 'Chair', 'Cadillac', 'Reformer', 'Torre', 'Mat (Solo)'];
-const regioesCorporais = ['Coluna cervical', 'Coluna torácica', 'Coluna Lombar', 'Membros Inferiores', 'Membros Superiores', 'Abdômen/Core', 'Pelve', 'Quadril', 'Glúteo', 'Corpo Inteiro'];
+const regioesCorporais = [
+  'Coluna cervical',
+  'Coluna torácica',
+  'Coluna Lombar',
+  'Coluna Vertebral',
+  'Centro de Forças',
+  'Cadeias Laterais',
+  'Membros Inferiores',
+  'Membros Superiores',
+  'Abdômen/Core',
+  'Pelve',
+  'Quadril',
+  'Glúteo',
+  'Corpo Inteiro',
+];
 const focosMusculares = ['Alongamento', 'Mobilidade', 'Fortalecimento', 'Respiração'];
 
 const nivelParaApi: Record<string, string> = { Iniciante: 'INICIANTE', Intermediário: 'INTERMEDIARIO', Avançado: 'AVANCADO', Gestante: 'GESTANTE' };
 const aparelhoParaApi: Record<string, string> = { Barrel: 'BARREL', Chair: 'CHAIR', Cadillac: 'CADILLAC', Reformer: 'REFORMER', Torre: 'TORRE', 'Mat (Solo)': 'MAT' };
-const regiaoParaApi: Record<string, string> = { 'Coluna cervical': 'COLUNA_CERVICAL', 'Coluna torácica': 'COLUNA_TORACICA', 'Coluna Lombar': 'COLUNA_LOMBAR', 'Membros Inferiores': 'MEMBROS_INFERIORES', 'Membros Superiores': 'MEMBROS_SUPERIORES', 'Abdômen/Core': 'ABDOMEN_CORE', Pelve: 'PELVE', Quadril: 'QUADRIL', Glúteo: 'GLUTEO', 'Corpo Inteiro': 'CORPO_INTEIRO' };
+const regiaoParaApi: Record<string, string> = {
+  'Coluna cervical': 'COLUNA_CERVICAL',
+  'Coluna torácica': 'COLUNA_TORACICA',
+  'Coluna Lombar': 'COLUNA_LOMBAR',
+  'Membros Inferiores': 'MEMBROS_INFERIORES',
+  'Membros Superiores': 'MEMBROS_SUPERIORES',
+  'Abdômen/Core': 'ABDOMEN_CORE',
+  'Pelve': 'PELVE',
+  'Quadril': 'QUADRIL',
+  'Glúteo': 'GLUTEO',
+  'Corpo Inteiro': 'CORPO_INTEIRO',
+  'Coluna Vertebral': 'COLUNA_VERTEBRAL',
+  'Centro de Forças': 'CENTRO_DE_FORCAS',
+  'Cadeias Laterais': 'CADEIAS_LATERAIS',
+};
 const focoParaApi: Record<string, string> = { Alongamento: 'ALONGAMENTO', Mobilidade: 'MOBILIDADE', Fortalecimento: 'FORTALECIMENTO', Respiração: 'RESPIRACAO' };
 
 export default function CadastrarExercicioScreen() {

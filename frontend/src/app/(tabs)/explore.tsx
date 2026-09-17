@@ -1,180 +1,388 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
+import { type Href, useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ExternalLink } from '@/components/external-link';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { BottomTabInset } from '@/constants/theme';
+import { listarAulas, type Aula } from '@/services/aulas-api';
 
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
-  const theme = useTheme();
+function formatarBuscaData(valor: string) {
+  const numeros = valor.replace(/\D/g, '').slice(0, 8);
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
+  if (numeros.length <= 2) {
+    return numeros;
+  }
+
+  if (numeros.length <= 4) {
+    return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
+  }
+
+  return `${numeros.slice(0, 2)}/${numeros.slice(2, 4)}/${numeros.slice(4)}`;
+}
+
+function formatarData(data: string) {
+  const parteData = data.slice(0, 10);
+  const [ano, mes, dia] = parteData.split('-');
+
+  if (!ano || !mes || !dia) {
+    return '-';
+  }
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+export default function AulasScreen() {
+  const router = useRouter();
+
+  const [busca, setBusca] = useState('');
+  const [aulas, setAulas] = useState<Aula[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    carregarAulas();
+  }, []);
+
+  async function carregarAulas() {
+    setCarregando(true);
+    setErro(null);
+
+    try {
+      const resposta = await listarAulas();
+      setAulas(resposta);
+    } catch (error) {
+      setErro(
+          error instanceof Error
+              ? error.message
+              : 'Não foi possível carregar as aulas.',
+      );
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  const aulasFiltradas = aulas.filter((aula) => {
+    const buscaNumerica = busca.replace(/\D/g, '');
+
+    if (!buscaNumerica) {
+      return true;
+    }
+
+    const dataNumerica = formatarData(aula.criadaEm).replace(/\D/g, '');
+
+    return dataNumerica.startsWith(buscaNumerica);
   });
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name="arrow.up.right.square"
-                  size={12}
+      <SafeAreaView style={styles.safeArea}>
+        <FlatList
+            data={aulasFiltradas}
+            keyExtractor={(aula) => aula.id}
+            renderItem={({ item }) => (
+                <AulaCard
+                    aula={item}
+                    onPress={() =>
+                        router.push({
+                          pathname: '/detalhes-aula',
+                          params: { aulaId: item.id },
+                        } as unknown as Href)
+                    }
                 />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <View style={styles.headerContent}>
+                <View style={styles.topBar}>
+                  <View>
+                    <Text style={styles.title}>Aulas</Text>
+                    <Text style={styles.subtitle}>Gerenciar aulas</Text>
+                  </View>
 
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
+                  <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Cadastrar aula"
+                      onPress={() =>
+                          router.push('/cadastrar-aula' as Href)
+                      }
+                      style={styles.addButton}
+                  >
+                    <AddIcon />
+                  </Pressable>
+                </View>
 
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
-              />
-            </ThemedView>
-          </Collapsible>
+                <View style={styles.searchContainer}>
+                  <Text style={styles.searchIcon}>⌕</Text>
 
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
+                  <TextInput
+                      value={busca}
+                      onChangeText={(texto) => setBusca(formatarBuscaData(texto))}
+                      placeholder="Buscar aula..."
+                      placeholderTextColor="#8B949E"
+                      style={styles.searchInput}
+                      returnKeyType="search"
+                      keyboardType="numeric"
+                  />
+                </View>
 
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
+                <Text style={styles.resultCount}>
+                  {aulasFiltradas.length}{' '}
+                  {aulasFiltradas.length === 1
+                      ? 'aula encontrada'
+                      : 'aulas encontradas'}
+                </Text>
 
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+                </View>
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                {carregando ? (
+                    <ActivityIndicator size="small" color="#276749" />
+                ) : erro ? (
+                    <>
+                      <Text style={styles.emptyText}>
+                        Não foi possível carregar as aulas.
+                      </Text>
+                      <Text style={styles.errorText}>{erro}</Text>
+
+                      <Pressable
+                          onPress={carregarAulas}
+                          style={styles.retryButton}
+                      >
+                        <Text style={styles.retryButtonText}>
+                          Tentar novamente
+                        </Text>
+                      </Pressable>
+                    </>
+                ) : (
+                    <Text style={styles.emptyText}>
+                      Nenhuma aula encontrada.
+                    </Text>
+                )}
+              </View>
+            }
+        />
+      </SafeAreaView>
+  );
+}
+
+function AulaCard({
+                    aula,
+                    onPress,
+                  }: {
+  aula: Aula;
+  onPress: () => void;
+}) {
+  return (
+      <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Aula de ${formatarData(aula.criadaEm)}`}
+          onPress={onPress}
+          style={styles.card}
+      >
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            Aula {formatarData(aula.criadaEm)}
+          </Text>
+
+          <Text style={styles.cardInfo}>
+            {aula.alunoIds.length}{' '}
+            {aula.alunoIds.length === 1 ? 'aluno' : 'alunos'}
+            {' • '}
+            {aula.exercicioIds.length}{' '}
+            {aula.exercicioIds.length === 1
+                ? 'exercício'
+                : 'exercícios'}
+          </Text>
+        </View>
+
+        <Text style={styles.cardArrow}>›</Text>
+      </Pressable>
+  );
+}
+
+function AddIcon() {
+  return (
+      <View style={styles.addIcon}>
+        <View style={styles.addIconHorizontal} />
+        <View style={styles.addIconVertical} />
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F7F8F7',
+  },
+
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: BottomTabInset + 24,
+  },
+
+  headerContent: {
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+
+  title: {
+    color: '#1D2B25',
+    fontSize: 30,
+    fontWeight: '700',
+    letterSpacing: -0.7,
+  },
+
+  subtitle: {
+    color: '#6C7670',
+    fontSize: 14,
+    marginTop: 4,
+  },
+
+  addButton: {
+    alignItems: 'center',
+    backgroundColor: '#276749',
+    borderRadius: 16,
+    height: 48,
+    justifyContent: 'center',
+    width: 48,
+  },
+
+  addIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 20,
+    width: 20,
+  },
+
+  addIconHorizontal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+    height: 3,
+    position: 'absolute',
+    width: 20,
+  },
+
+  addIconVertical: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+    height: 20,
+    position: 'absolute',
+    width: 3,
+  },
+
+  searchContainer: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E9E6',
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 52,
+    paddingHorizontal: 15,
+  },
+
+  searchIcon: {
+    color: '#68736C',
+    fontSize: 27,
+    lineHeight: 27,
+    marginRight: 8,
+    transform: [{ rotate: '-20deg' }],
+  },
+
+  searchInput: {
+    color: '#1D2B25',
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
+  },
+
+  resultCount: {
+    color: '#737D77',
+    fontSize: 13,
+    marginTop: 20,
+  },
+
+  card: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E9ECEA',
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 12,
+    minHeight: 82,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+
+  cardContent: {
     flex: 1,
   },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+
+  cardTitle: {
+    color: '#1D2B25',
+    fontSize: 16,
+    fontWeight: '700',
   },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
+
+  cardInfo: {
+    color: '#68736C',
+    fontSize: 13,
+    marginTop: 6,
   },
-  titleContainer: {
-    gap: Spacing.three,
+
+  cardArrow: {
+    color: '#276749',
+    fontSize: 28,
+    fontWeight: '300',
+    marginLeft: 12,
+  },
+
+  emptyContainer: {
     alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
+    paddingVertical: 40,
   },
-  centerText: {
+
+  emptyText: {
+    color: '#737D77',
+    fontSize: 14,
     textAlign: 'center',
   },
-  pressed: {
-    opacity: 0.7,
+
+  errorText: {
+    color: '#B42318',
+    fontSize: 12,
+    marginTop: 6,
+    textAlign: 'center',
   },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
+
+  retryButton: {
+    backgroundColor: '#E9EEEA',
+    borderRadius: 10,
+    marginTop: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
-  },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+
+  retryButtonText: {
+    color: '#276749',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

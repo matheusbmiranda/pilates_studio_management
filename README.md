@@ -134,4 +134,4 @@ Embora o frontend seja desenvolvido com React Native, o projeto utiliza Expo e p
 
 ## Observações
 
-O projeto ainda está em fase de desenvolvimento passará por melhorias e aperfeiçoamentos. 
+O projeto ainda está em fase de desenvolvimento e passará por melhorias e aperfeiçoamentos. 

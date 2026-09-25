@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { type Href, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
@@ -47,9 +48,11 @@ export default function AulasScreen() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  useEffect(() => {
-    carregarAulas();
-  }, []);
+  useFocusEffect(
+      useCallback(() => {
+        carregarAulas();
+      }, []),
+  );
 
   async function carregarAulas() {
     setCarregando(true);

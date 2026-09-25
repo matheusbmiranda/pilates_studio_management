@@ -91,3 +91,12 @@ async function requestJson<T = unknown>(
 
     return payload as T;
 }
+
+export async function buscarAulaPorId(
+    id: string,
+): Promise<Aula> {
+    return requestJson<Aula>(
+        `/aulas/${encodeURIComponent(id)}`,
+        {},
+    );
+}

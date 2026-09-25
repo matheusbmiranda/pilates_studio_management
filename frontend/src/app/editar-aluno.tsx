@@ -9,7 +9,15 @@ import {
   type Aluno as AlunoApi,
   type AlunoRequest,
 } from '@/services/alunos-api';
-import {obterAulasDoAlunoMockadas, type AulaAluno,} from '@/data/alunos';
+
+import {
+  buscarAulasPorAluno,
+  type Aula,
+} from '@/services/aulas-api';
+
+import {
+  buscarExercicioPorId,
+} from '@/services/exercicios-api';
 
 type StatusAluno = 'Ativo' | 'Inativo';
 
@@ -70,6 +78,7 @@ export default function EditarAlunoScreen() {
   const [formulario, setFormulario] = useState<AlunoApi | undefined>();
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [aulas, setAulas] = useState<Aula[]>([]);
 
   const [historicoAberto, setHistoricoAberto] = useState(false);
   const [aulaAbertaId, setAulaAbertaId] = useState<string | null>(null);
@@ -85,13 +94,18 @@ export default function EditarAlunoScreen() {
       setCarregando(true);
 
       try {
-        const aluno = await buscarAlunoPorId(alunoId);
+        const [aluno, aulasDoAluno] = await Promise.all([
+          buscarAlunoPorId(alunoId),
+          buscarAulasPorAluno(alunoId),
+        ]);
 
         setFormulario({
           ...aluno,
           dataNascimento: formatarDataParaTela(aluno.dataNascimento),
           telefone: formatarTelefone(aluno.telefone),
         });
+
+        setAulas(aulasDoAluno);
 
         setHistoricoAberto(false);
         setAulaAbertaId(null);
@@ -128,8 +142,6 @@ export default function EditarAlunoScreen() {
       </SafeAreaView>
     );
   }
-
-  const aulas = obterAulasDoAlunoMockadas(formulario.id);
 
   const atualizarCampo = <Campo extends keyof AlunoApi>(
       campo: Campo,
@@ -259,7 +271,7 @@ function FormField({ label, value, onChangeText, keyboardType, autoCapitalize }:
   return <View><Text style={styles.label}>{label}</Text><TextInput autoCapitalize={autoCapitalize} keyboardType={keyboardType} value={value} onChangeText={onChangeText} placeholderTextColor="#8B949E" style={styles.input} /></View>;
 }
 
-function HistoricoAulas({ aulas, aberto, aulaAbertaId, onToggle, onToggleAula }: { aulas: AulaAluno[]; aberto: boolean; aulaAbertaId: string | null; onToggle: () => void; onToggleAula: (id: string) => void }) {
+function HistoricoAulas({ aulas, aberto, aulaAbertaId, onToggle, onToggleAula }: { aulas: Aula[]; aberto: boolean; aulaAbertaId: string | null; onToggle: () => void; onToggleAula: (id: string) => void }) {
   return (
     <View style={styles.history}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: aberto }} onPress={onToggle} style={styles.accordionHeader}>
@@ -270,22 +282,149 @@ function HistoricoAulas({ aulas, aberto, aulaAbertaId, onToggle, onToggleAula }:
   );
 }
 
-function AulaAccordion({ aula, numero, aberto, onToggle }: { aula: AulaAluno; numero: number; aberto: boolean; onToggle: () => void }) {
+function formatarDataAula(data: string) {
+  const [ano, mes, dia] = data.split('T')[0].split('-');
+
+  if (!ano || !mes || !dia) {
+    return data;
+  }
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatarLista(lista: string[]) {
+  if (!lista || lista.length === 0) {
+    return 'Nenhum';
+  }
+
+  return lista.join(', ');
+}
+
+function AulaAccordion({
+                         aula,
+                         numero,
+                         aberto,
+                         onToggle,
+                       }: {
+  aula: Aula;
+  numero: number;
+  aberto: boolean;
+  onToggle: () => void;
+}) {
+  const [nomesExercicios, setNomesExercicios] = useState<string[]>([]);
+  const [carregandoExercicios, setCarregandoExercicios] = useState(false);
+
+  useEffect(() => {
+    if (!aberto) {
+      return;
+    }
+
+    if (!aula.exercicioIds || aula.exercicioIds.length === 0) {
+      setNomesExercicios([]);
+      return;
+    }
+
+    let ativo = true;
+
+    async function carregarExercicios() {
+      setCarregandoExercicios(true);
+
+      try {
+        const resultados = await Promise.allSettled(
+            aula.exercicioIds.map((id) => buscarExercicioPorId(id)),
+        );
+
+        if (!ativo) {
+          return;
+        }
+
+        const nomes = resultados
+            .filter(
+                (
+                    resultado,
+                ): resultado is PromiseFulfilledResult<Awaited<ReturnType<typeof buscarExercicioPorId>>> =>
+                    resultado.status === 'fulfilled',
+            )
+            .map((resultado) => resultado.value.nome);
+
+        setNomesExercicios(nomes);
+      } finally {
+        if (ativo) {
+          setCarregandoExercicios(false);
+        }
+      }
+    }
+
+    carregarExercicios();
+
+    return () => {
+      ativo = false;
+    };
+  }, [aberto, aula.exercicioIds]);
+
   return (
-    <View style={styles.lesson}>
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: aberto }} onPress={onToggle} style={styles.lessonHeader}>
-        <Text style={styles.lessonTitle}>{aberto ? '▼' : '>'} Aula {numero} — {aula.data}</Text>
-      </Pressable>
-      {aberto && <View style={styles.lessonDetails}>
-        <Detail label="Data" value={aula.data} />
-        <Detail label="Nível" value={aula.nivel} />
-        <Detail label="Objetivo principal" value={aula.objetivoPrincipal} />
-        <Text style={styles.detailLabel}>Objetivos secundários</Text>
-        {aula.objetivosSecundarios.map((objetivo) => <Text key={objetivo} style={styles.listItem}>• {objetivo}</Text>)}
-        <Text style={[styles.detailLabel, styles.activitiesLabel]}>Atividades</Text>
-        {aula.atividades.map((atividade) => <View key={atividade.equipamento} style={styles.activity}><Text style={styles.equipment}>{atividade.equipamento}</Text>{atividade.exercicios.map((exercicio) => <Text key={exercicio} style={styles.listItem}>• {exercicio}</Text>)}</View>)}
-      </View>}
-    </View>
+      <View style={styles.lesson}>
+        <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: aberto }}
+            onPress={onToggle}
+            style={styles.lessonHeader}
+        >
+          <Text style={styles.lessonTitle}>
+            {aberto ? '▼' : '>'} Aula {numero} — {formatarDataAula(aula.criadaEm)}
+          </Text>
+        </Pressable>
+
+        {aberto && (
+            <View style={styles.lessonDetails}>
+              <Detail
+                  label="Data"
+                  value={formatarDataAula(aula.criadaEm)}
+              />
+
+              <Detail
+                  label="Níveis"
+                  value={formatarLista(aula.niveis)}
+              />
+
+              <Detail
+                  label="Aparelhos"
+                  value={formatarLista(aula.aparelhos)}
+              />
+
+              <Detail
+                  label="Regiões corporais"
+                  value={formatarLista(aula.regioesCorporais)}
+              />
+
+              <Detail
+                  label="Focos musculares"
+                  value={formatarLista(aula.focosMusculares)}
+              />
+
+              <Text style={styles.detailLabel}>Exercícios</Text>
+
+              {carregandoExercicios ? (
+                  <Text style={styles.detailValue}>
+                    Carregando exercícios...
+                  </Text>
+              ) : nomesExercicios.length === 0 ? (
+                  <Text style={styles.detailValue}>
+                    Nenhum exercício encontrado.
+                  </Text>
+              ) : (
+                  nomesExercicios.map((nome) => (
+                      <Text
+                          key={nome}
+                          style={styles.listItem}
+                      >
+                        • {nome}
+                      </Text>
+                  ))
+              )}
+            </View>
+        )}
+      </View>
   );
 }
 

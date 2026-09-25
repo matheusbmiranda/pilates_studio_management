@@ -15,5 +15,7 @@ public interface AulaRepository extends MongoRepository<Aula, String> {
             LocalDateTime fim
     );
 
+    long countByCriadaEmBetween(LocalDateTime inicio, LocalDateTime fim);
+
     List<Aula> findByAlunoIdsContainingOrderByCriadaEmDesc(String alunoId);
 }

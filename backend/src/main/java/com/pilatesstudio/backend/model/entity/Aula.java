@@ -19,6 +19,8 @@ public class Aula {
     @Id
     private String id;
 
+    private String nome;
+
     private List<String> niveis = new ArrayList<>();
 
     private List<String> aparelhos = new ArrayList<>();

@@ -16,7 +16,7 @@ import java.util.Set;
 @Setter
 public class ExercicioRequestDTO {
 
-    @NotBlank(message = "O nome não pode estar vazio.")
+    @NotBlank(message = "Preencha o nome do exercício.")
     private String nome;
 
     private String traducao;
@@ -33,7 +33,7 @@ public class ExercicioRequestDTO {
     @NotEmpty(message = "Selecione o(s) foco(s) muscular(es) deste exercício.")
     private Set<FocoMuscular> focosMusculares;
 
-    @NotEmpty(message = "Informe o(s) objetivo(s) deste exercício.")
+    @NotEmpty(message = "Informe ao menos um objetivo deste exercício.")
     private List<String> objetivos;
 
     private List<String> contraindicacoes;

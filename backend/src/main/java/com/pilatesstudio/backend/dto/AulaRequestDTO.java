@@ -25,6 +25,6 @@ public class AulaRequestDTO {
     @NotEmpty(message = "Selecione pelo menos um exercício.")
     private List<String> exercicioIds;
 
-    @NotEmpty(message = "Selecione pelo menos um aluno.")
+    @NotEmpty(message = "Selecione pelo menos um aluno que fará essa aula.")
     private List<String> alunoIds;
 }

@@ -2,6 +2,7 @@ package com.pilatesstudio.backend.service;
 
 import com.pilatesstudio.backend.dto.AlunoRequestDTO;
 import com.pilatesstudio.backend.dto.AlunoResponseDTO;
+import com.pilatesstudio.backend.exception.AlunoNaoEncontradoException;
 import com.pilatesstudio.backend.model.entity.Aluno;
 import com.pilatesstudio.backend.model.enums.StatusAluno;
 import com.pilatesstudio.backend.repository.AlunoRepository;
@@ -123,7 +124,8 @@ public class AlunoService {
 
     public AlunoResponseDTO buscarPorId(String id) {
 
-        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(AlunoNaoEncontradoException::new);
 
         AlunoResponseDTO response = new AlunoResponseDTO();
 
@@ -140,7 +142,8 @@ public class AlunoService {
 
     public AlunoResponseDTO editar(String id, AlunoRequestDTO request) {
 
-        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(AlunoNaoEncontradoException::new);
 
         aluno.setNome(request.getNome());
         aluno.setDataNascimento(request.getDataNascimento());

@@ -13,16 +13,16 @@ import java.time.LocalDate;
 @Setter
 public class AlunoRequestDTO {
 
-    @NotBlank(message = "O nome não pode estar vazio.")
+    @NotBlank(message = "Preencha o nome do aluno.")
     private String nome;
 
-    @NotNull(message = "Preencha a data de nascimento.")
+    @NotNull(message = "Preencha a data de nascimento do aluno.")
     private LocalDate dataNascimento;
 
-    @NotBlank(message = "O telefone não pode estar vazio.")
+    @NotBlank(message = "Preencha o número de telefone do aluno.")
     private String telefone;
 
-    @Email(message = "E-mail inválido.")
+    @Email(message = "Formato de e-mail inválido.")
     private String email;
 
     @NotNull(message = "Selecione o status.")

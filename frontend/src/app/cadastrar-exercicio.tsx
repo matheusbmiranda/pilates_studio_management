@@ -59,6 +59,7 @@ export default function CadastrarExercicioScreen() {
   const [contraindicacoes, setContraindicacoes] = useState<string[]>([]);
   const [imagemSelecionada, setImagemSelecionada] = useState<string | null>(null);
   const [imagemUrl, setImagemUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
   const [selecionandoImagem, setSelecionandoImagem] = useState(false);
   const [processandoImagem, setProcessandoImagem] = useState(false);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
@@ -123,6 +124,7 @@ export default function CadastrarExercicioScreen() {
         objetivos,
         contraindicacoes,
         imagemUrl: urlDaImagem,
+        videoUrl: videoUrl.trim() || null,
       };
 
       await criarExercicio(exercicio);
@@ -178,6 +180,25 @@ export default function CadastrarExercicioScreen() {
               {imagemUrl ? <Text style={styles.imageUploadedText}>Imagem enviada para o Cloudinary.</Text> : null}
             </View>
 
+            <View>
+              <Text style={styles.label}>Vídeo demonstrativo (YouTube)</Text>
+
+              <TextInput
+                  value={videoUrl}
+                  onChangeText={setVideoUrl}
+                  placeholder="Cole o link do vídeo do YouTube"
+                  placeholderTextColor="#8B949E"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  style={styles.input}
+              />
+
+              <Text style={styles.videoHelp}>
+                Campo opcional. Você poderá adicionar ou alterar o vídeo posteriormente.
+              </Text>
+            </View>
+
             {erroOperacao ? <Text style={styles.operationErrorText}>{erroOperacao}</Text> : null}
             <Pressable accessibilityRole="button" accessibilityState={{ disabled: bloqueado }} disabled={bloqueado} onPress={salvar} style={[styles.submitButton, bloqueado && styles.buttonDisabled]}>
               {salvando ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>Salvar exercício</Text>}
@@ -220,6 +241,6 @@ const styles = StyleSheet.create({
   form: { gap: 20 }, label: { color: '#344139', fontSize: 14, fontWeight: '700', marginBottom: 8 }, input: { backgroundColor: '#FFFFFF', borderColor: '#E1E6E2', borderRadius: 13, borderWidth: 1, color: '#1D2B25', fontSize: 16, height: 52, paddingHorizontal: 15 }, errorText: { color: '#B42318', fontSize: 13, marginTop: -14 }, operationErrorText: { backgroundColor: '#FCEBE9', borderRadius: 10, color: '#B42318', fontSize: 14, padding: 12 },
   optionsGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, option: { backgroundColor: '#FFFFFF', borderColor: '#E1E6E2', borderRadius: 10, borderWidth: 1, justifyContent: 'center', minHeight: 40, paddingHorizontal: 12 }, optionSelected: { backgroundColor: '#E3F0E8', borderColor: '#276749' }, optionText: { color: '#66716A', fontSize: 14, fontWeight: '600' }, optionTextSelected: { color: '#276749', fontWeight: '700' },
   addItemRow: { flexDirection: 'row', gap: 8 }, addItemInput: { backgroundColor: '#FFFFFF', borderColor: '#E1E6E2', borderRadius: 13, borderWidth: 1, color: '#1D2B25', flex: 1, fontSize: 16, height: 52, paddingHorizontal: 15 }, addItemButton: { alignItems: 'center', backgroundColor: '#276749', borderRadius: 13, height: 52, justifyContent: 'center', width: 52 }, addItemButtonText: { color: '#FFFFFF', fontSize: 27, fontWeight: '400', lineHeight: 30 }, tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 }, tag: { alignItems: 'center', backgroundColor: '#E3F0E8', borderRadius: 18, flexDirection: 'row', paddingHorizontal: 10, paddingVertical: 7 }, tagText: { color: '#276749', fontSize: 13, fontWeight: '700' }, tagRemove: { color: '#276749', fontSize: 17, fontWeight: '400', lineHeight: 16, marginLeft: 7 },
-  imagePreview: { borderRadius: 13, height: 180, marginBottom: 10, width: '100%' }, imageButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#CFE0D4', borderRadius: 13, borderStyle: 'dashed', borderWidth: 1, flexDirection: 'row', minHeight: 82, paddingHorizontal: 15 }, imageIcon: { backgroundColor: '#E3F0E8', borderRadius: 18, color: '#276749', fontSize: 23, height: 36, lineHeight: 34, marginRight: 12, textAlign: 'center', width: 36 }, imageButtonContent: { flex: 1 }, imageButtonTitle: { color: '#276749', fontSize: 15, fontWeight: '700' }, imageButtonDescription: { color: '#6C7670', fontSize: 12, marginTop: 3 }, imageUploadedText: { color: '#25734B', fontSize: 13, fontWeight: '600', marginTop: 8 },
-  submitButton: { alignItems: 'center', backgroundColor: '#276749', borderRadius: 14, justifyContent: 'center', marginTop: 8, minHeight: 54 }, submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' }, buttonDisabled: { opacity: 0.65 }, savingText: { color: '#6C7670', fontSize: 13, textAlign: 'center' },
+  imagePreview: { borderRadius: 13, height: 180, marginBottom: 10, width: '100%' }, imageButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#CFE0D4', borderRadius: 13, borderStyle: 'dashed', borderWidth: 1, flexDirection: 'row', minHeight: 82, paddingHorizontal: 15 }, imageIcon: { backgroundColor: '#E3F0E8', borderRadius: 18, color: '#276749', fontSize: 23, height: 36, lineHeight: 34, marginRight: 12, textAlign: 'center', width: 36 }, imageButtonContent: { flex: 1 }, imageButtonTitle: { color: '#276749', fontSize: 15, fontWeight: '700' }, imageButtonDescription: { color: '#6C7670', fontSize: 12, marginTop: 3 }, imageUploadedText: { color: '#25734B', fontSize: 13, fontWeight: '600', marginTop: 8 }, videoHelp: {
+    color: '#6C7670', fontSize: 12, marginTop: 6,},  submitButton: { alignItems: 'center', backgroundColor: '#276749', borderRadius: 14, justifyContent: 'center', marginTop: 8, minHeight: 54 }, submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' }, buttonDisabled: { opacity: 0.65 }, savingText: { color: '#6C7670', fontSize: 13, textAlign: 'center' },
 });

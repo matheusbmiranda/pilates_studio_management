@@ -20,6 +20,7 @@ export type ExercicioRequest = {
   objetivos: string[];
   contraindicacoes: string[];
   imagemUrl: string | null;
+  videoUrl: string | null;
 };
 
 export type Exercicio = {
@@ -33,6 +34,7 @@ export type Exercicio = {
   objetivos: string[];
   contraindicacoes: string[];
   imagemUrl: string | null;
+  videoUrl: string | null;
 };
 
 export type ExercicioPage = {

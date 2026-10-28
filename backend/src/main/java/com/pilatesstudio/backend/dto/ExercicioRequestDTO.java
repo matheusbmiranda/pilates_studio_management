@@ -39,5 +39,7 @@ public class ExercicioRequestDTO {
     private List<String> contraindicacoes;
 
     private String imagemUrl;
+
+    private String videoUrl;
 }
 

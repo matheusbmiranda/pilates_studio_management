@@ -1,3 +1,4 @@
+import YouTubePlayer from '../components/YoutubePlayer';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
@@ -10,6 +11,7 @@ import {
     Text,
     TextInput,
     View,
+    useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -66,8 +68,18 @@ const focosMusculares = [
     ['Respiração', 'RESPIRACAO'],
 ] as const;
 
+function formatarEtiqueta(valor: string): string {
+    return valor
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .replace(/(^|\s)\S/g, (letra) => letra.toUpperCase());
+}
+
 export default function CadastrarAulaScreen() {
     const router = useRouter();
+
+    const { width: larguraTela } = useWindowDimensions();
+    const telaPequena = larguraTela < 768;
 
     const [niveisSelecionados, setNiveisSelecionados] = useState<string[]>([]);
     const [aparelhosSelecionados, setAparelhosSelecionados] = useState<string[]>([]);
@@ -396,84 +408,110 @@ export default function CadastrarAulaScreen() {
                                     );
 
                                 return (
+
+
                                     <View
                                         key={exercicio.id}
                                         style={[
                                             styles.exerciseCard,
-                                            selecionado &&
-                                            styles.exerciseCardSelected,
+                                            telaPequena && styles.exerciseCardMobile,
+                                            selecionado && styles.exerciseCardSelected,
                                         ]}
                                     >
-                                        <Pressable
-                                            onPress={() =>
-                                                alternarSelecao(
-                                                    exercicio.id,
-                                                    exerciciosSelecionados,
-                                                    setExerciciosSelecionados,
-                                                )
-                                            }
-                                            style={styles.exerciseMain}
-                                        >
+                                        <View style={styles.exerciseTopRow}>
+                                            <Pressable
+                                                onPress={() =>
+                                                    alternarSelecao(
+                                                        exercicio.id,
+                                                        exerciciosSelecionados,
+                                                        setExerciciosSelecionados,
+                                                    )
+                                                }
+                                                style={styles.exerciseMain}
+                                            >
+                                                <View
+                                                    style={[
+                                                        styles.checkbox,
+                                                        selecionado && styles.checkboxSelected,
+                                                    ]}
+                                                >
+                                                    {selecionado ? (
+                                                        <Text style={styles.checkboxText}>✓</Text>
+                                                    ) : null}
+                                                </View>
+
+                                                <View style={styles.exerciseContent}>
+                                                    <Text style={styles.exerciseName}>
+                                                        {exercicio.nome}
+                                                    </Text>
+
+                                                    {exercicio.traducao ? (
+                                                        <Text style={styles.exerciseTranslation}>
+                                                            {exercicio.traducao}
+                                                        </Text>
+                                                    ) : null}
+
+                                                    <View style={styles.exerciseTags}>
+                                                        {[
+                                                            ...(exercicio.aparelhos ?? []),
+                                                            ...(exercicio.focosMusculares ?? []),
+                                                        ].map((item, index) => (
+                                                            <View
+                                                                key={`${item}-${index}`}
+                                                                style={styles.exerciseTag}
+                                                            >
+                                                                <Text style={styles.exerciseTagText}>
+                                                                    {formatarEtiqueta(item)}
+                                                                </Text>
+                                                            </View>
+                                                        ))}
+                                                    </View>
+
+                                                    {exercicio.regioesCorporais?.length ? (
+                                                        <Text style={styles.exerciseRegions}>
+                                                            {exercicio.regioesCorporais
+                                                                .map(formatarEtiqueta)
+                                                                .join(' • ')}
+                                                        </Text>
+                                                    ) : null}
+                                                </View>
+                                            </Pressable>
+
+                                            {telaPequena ? (
+                                                <Pressable
+                                                    onPress={() => setExercicioInfo(exercicio)}
+                                                    style={styles.infoButton}
+                                                >
+                                                    <Text style={styles.infoButtonText}>i</Text>
+                                                </Pressable>
+                                            ) : null}
+
+                                        </View>
+
+                                        {exercicio.videoUrl?.trim() ? (
                                             <View
                                                 style={[
-                                                    styles.checkbox,
-                                                    selecionado &&
-                                                    styles.checkboxSelected,
+                                                    styles.exerciseVideoColumn,
+                                                    telaPequena && styles.exerciseVideoColumnMobile,
                                                 ]}
                                             >
-                                                {selecionado ? (
-                                                    <Text
-                                                        style={
-                                                            styles.checkboxText
-                                                        }
-                                                    >
-                                                        ✓
-                                                    </Text>
-                                                ) : null}
+                                                <View style={styles.exerciseVideo}>
+                                                    <YouTubePlayer videoUrl={exercicio.videoUrl} />
+                                                </View>
                                             </View>
+                                        ) : null}
 
-                                            <View
-                                                style={
-                                                    styles.exerciseContent
-                                                }
+                                        {!telaPequena ? (
+                                            <Pressable
+                                                onPress={() => setExercicioInfo(exercicio)}
+                                                style={styles.infoButton}
                                             >
-                                                <Text
-                                                    style={
-                                                        styles.exerciseName
-                                                    }
-                                                >
-                                                    {exercicio.nome}
-                                                </Text>
+                                                <Text style={styles.infoButtonText}>i</Text>
+                                            </Pressable>
+                                        ) : null}
 
-                                                {exercicio.traducao ? (
-                                                    <Text
-                                                        style={
-                                                            styles.exerciseTranslation
-                                                        }
-                                                    >
-                                                        {exercicio.traducao}
-                                                    </Text>
-                                                ) : null}
-                                            </View>
-                                        </Pressable>
-
-                                        <Pressable
-                                            onPress={() =>
-                                                setExercicioInfo(
-                                                    exercicio,
-                                                )
-                                            }
-                                            style={styles.infoButton}
-                                        >
-                                            <Text
-                                                style={
-                                                    styles.infoButtonText
-                                                }
-                                            >
-                                                i
-                                            </Text>
-                                        </Pressable>
                                     </View>
+
                                 );
                             })}
                             {totalPaginasExercicios > 1 ? (
@@ -958,13 +996,54 @@ const styles = StyleSheet.create({
     },
 
     exerciseCard: {
-        alignItems: 'center',
         backgroundColor: '#F7F8F7',
         borderColor: '#E5E9E6',
         borderRadius: 12,
         borderWidth: 1,
         flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        gap: 12,
+        width: '100%',
+    },
+
+    exerciseCardMobile: {
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: 12,
         padding: 10,
+    },
+
+
+    exerciseTopRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        flex: 1,
+        minWidth: 0,
+        gap: 8,
+    },
+
+
+
+    exerciseVideoColumn: {
+        flex: 4,
+        minWidth: 0,
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+    },
+
+    exerciseVideoColumnMobile: {
+        width: '100%',
+        flexShrink: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+
+    exerciseVideo: {
+        width: '100%',
+        maxWidth: 370,
+        alignSelf: 'center',
     },
 
     exerciseCardSelected: {
@@ -972,11 +1051,17 @@ const styles = StyleSheet.create({
         borderColor: '#276749',
     },
 
+
+
     exerciseMain: {
         alignItems: 'center',
-        flex: 1,
         flexDirection: 'row',
+        flex: 1,
+        minWidth: 0,
+        gap: 4,
     },
+
+
 
     checkbox: {
         alignItems: 'center',
@@ -1002,6 +1087,8 @@ const styles = StyleSheet.create({
 
     exerciseContent: {
         flex: 1,
+        minWidth: 0,
+        paddingVertical: 4,
     },
 
     exerciseName: {
@@ -1016,14 +1103,46 @@ const styles = StyleSheet.create({
         marginTop: 3,
     },
 
+
+    exerciseTags: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginTop: 10,
+        alignSelf: 'flex-start',
+    },
+
+
+    exerciseTag: {
+        backgroundColor: '#DCEFE6',
+        borderRadius: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+
+    exerciseTagText: {
+        color: '#176B50',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+
+    exerciseRegions: {
+        color: '#687783',
+        fontSize: 13,
+        marginTop: 7,
+    },
+
+
     infoButton: {
         alignItems: 'center',
         borderColor: '#276749',
         borderRadius: 999,
         borderWidth: 1,
-        height: 28,
+        height: 30,
         justifyContent: 'center',
-        width: 28,
+        width: 30,
+        flexShrink: 0,
+        marginLeft: 'auto',
     },
 
     infoButtonText: {

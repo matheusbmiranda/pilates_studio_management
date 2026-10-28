@@ -39,6 +39,7 @@ build/
 backend/.env
 frontend/.env
 frontend/.env.*
+frontend/.env*
 
 ### React Native / Expo ###
 frontend/node_modules/

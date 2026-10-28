@@ -36,6 +36,7 @@ public class ExercicioService {
         exercicio.setObjetivos(request.getObjetivos());
         exercicio.setContraindicacoes(request.getContraindicacoes());
         exercicio.setImagemUrl(request.getImagemUrl());
+        exercicio.setVideoUrl(request.getVideoUrl());
 
         Exercicio exercicioSalvo = exercicioRepository.save(exercicio);
 
@@ -51,6 +52,7 @@ public class ExercicioService {
         response.setObjetivos(exercicioSalvo.getObjetivos());
         response.setContraindicacoes(exercicioSalvo.getContraindicacoes());
         response.setImagemUrl(exercicioSalvo.getImagemUrl());
+        response.setVideoUrl(exercicioSalvo.getVideoUrl());
 
         return response;
     }
@@ -139,6 +141,7 @@ public class ExercicioService {
             response.setObjetivos(exercicio.getObjetivos());
             response.setContraindicacoes(exercicio.getContraindicacoes());
             response.setImagemUrl(exercicio.getImagemUrl());
+            response.setVideoUrl(exercicio.getVideoUrl());
 
             return response;
         });
@@ -160,6 +163,7 @@ public class ExercicioService {
         response.setObjetivos(exercicio.getObjetivos());
         response.setContraindicacoes(exercicio.getContraindicacoes());
         response.setImagemUrl(exercicio.getImagemUrl());
+        response.setVideoUrl(exercicio.getVideoUrl());
 
         return response;
     }
@@ -177,6 +181,7 @@ public class ExercicioService {
         exercicio.setObjetivos(request.getObjetivos());
         exercicio.setContraindicacoes(request.getContraindicacoes());
         exercicio.setImagemUrl(request.getImagemUrl());
+        exercicio.setVideoUrl(request.getVideoUrl());
 
         Exercicio exercicioSalvo = exercicioRepository.save(exercicio);
 
@@ -192,6 +197,7 @@ public class ExercicioService {
         response.setObjetivos(exercicioSalvo.getObjetivos());
         response.setContraindicacoes(exercicioSalvo.getContraindicacoes());
         response.setImagemUrl(exercicioSalvo.getImagemUrl());
+        response.setVideoUrl(exercicioSalvo.getVideoUrl());
 
         return response;
     }

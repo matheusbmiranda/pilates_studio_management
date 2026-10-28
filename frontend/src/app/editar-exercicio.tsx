@@ -136,6 +136,7 @@ export default function EditarExercicioScreen() {
 
     const [imagemUrl, setImagemUrl] = useState<string | null>(null);
     const [imagemSelecionada, setImagemSelecionada] = useState<string | null>(null);
+    const [videoUrl, setVideoUrl] = useState('');
 
     useEffect(() => {
         carregarExercicio();
@@ -184,6 +185,7 @@ export default function EditarExercicioScreen() {
             setObjetivos(exercicio.objetivos ?? []);
             setContraindicacoes(exercicio.contraindicacoes ?? []);
             setImagemUrl(exercicio.imagemUrl ?? null);
+            setVideoUrl(exercicio.videoUrl ?? '');
         } catch {
             setErroOperacao('Não foi possível carregar o exercício.');
         } finally {
@@ -302,6 +304,7 @@ export default function EditarExercicioScreen() {
                 objetivos,
                 contraindicacoes,
                 imagemUrl: novaImagemUrl,
+                videoUrl: videoUrl.trim() || null,
             };
 
             await atualizarExercicio(id, exercicio);
@@ -579,6 +582,22 @@ export default function EditarExercicioScreen() {
                     </Text>
                 </Pressable>
 
+                <Text style={styles.label}>Vídeo demonstrativo (YouTube)</Text>
+
+                <TextInput
+                    value={videoUrl}
+                    onChangeText={setVideoUrl}
+                    placeholder="Cole o link do vídeo do YouTube"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="url"
+                    style={styles.input}
+                />
+
+                <Text style={styles.ajuda}>
+                    Campo opcional. Deixe vazio para remover o vídeo.
+                </Text>
+
                 <Pressable
                     onPress={salvar}
                     disabled={salvando}
@@ -806,5 +825,11 @@ const styles = StyleSheet.create({
     textoCarregando: {
         marginTop: 12,
         color: '#666',
+    },
+
+    ajuda: {
+        fontSize: 13,
+        color: '#666',
+        marginTop: 6,
     },
 });

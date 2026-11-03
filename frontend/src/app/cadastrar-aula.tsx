@@ -418,12 +418,7 @@ export default function CadastrarAulaScreen() {
                                             selecionado && styles.exerciseCardSelected,
                                         ]}
                                     >
-                                        <View
-                                            style={[
-                                                styles.exerciseTopRow,
-                                                telaPequena && styles.exerciseTopRowMobile,
-                                            ]}
-                                        >
+                                        <View style={styles.exerciseTopRow}>
                                             <Pressable
                                                 onPress={() =>
                                                     alternarSelecao(
@@ -1015,11 +1010,8 @@ const styles = StyleSheet.create({
     exerciseCardMobile: {
         flexDirection: 'column',
         alignItems: 'stretch',
-        gap: 16,
+        gap: 12,
         padding: 10,
-        flex: 0,
-        height: 'auto',
-        alignSelf: 'stretch',
     },
 
 
@@ -1031,13 +1023,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
 
-    exerciseTopRowMobile: {
-        flex: 0,
-        width: '100%',
-        alignSelf: 'stretch',
-        position: 'relative',
-        zIndex: 1,
-    },
+
 
     exerciseVideoColumn: {
         flex: 4,
@@ -1048,13 +1034,9 @@ const styles = StyleSheet.create({
 
     exerciseVideoColumnMobile: {
         width: '100%',
-        flex: 0,
-        flexGrow: 0,
-        flexShrink: 0,
-        alignSelf: 'stretch',
+        flexShrink: 1,
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        marginTop: 16,
+        justifyContent: 'center',
     },
 
     exerciseVideo: {
@@ -1067,8 +1049,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#E9F3ED',
         borderColor: '#276749',
     },
-
-
 
     exerciseMain: {
         alignItems: 'center',

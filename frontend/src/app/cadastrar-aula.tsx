@@ -1015,8 +1015,11 @@ const styles = StyleSheet.create({
     exerciseCardMobile: {
         flexDirection: 'column',
         alignItems: 'stretch',
-        gap: 12,
+        gap: 16,
         padding: 10,
+        flex: 0,
+        height: 'auto',
+        alignSelf: 'stretch',
     },
 
 
@@ -1032,6 +1035,8 @@ const styles = StyleSheet.create({
         flex: 0,
         width: '100%',
         alignSelf: 'stretch',
+        position: 'relative',
+        zIndex: 1,
     },
 
     exerciseVideoColumn: {
@@ -1043,17 +1048,18 @@ const styles = StyleSheet.create({
 
     exerciseVideoColumnMobile: {
         width: '100%',
+        flex: 0,
         flexGrow: 0,
         flexShrink: 0,
+        alignSelf: 'stretch',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        marginTop: 16,
     },
-
 
     exerciseVideo: {
         width: '100%',
         maxWidth: 370,
-        aspectRatio: 16 / 9,
         alignSelf: 'center',
     },
 

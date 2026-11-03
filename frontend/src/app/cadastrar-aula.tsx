@@ -418,7 +418,12 @@ export default function CadastrarAulaScreen() {
                                             selecionado && styles.exerciseCardSelected,
                                         ]}
                                     >
-                                        <View style={styles.exerciseTopRow}>
+                                        <View
+                                            style={[
+                                                styles.exerciseTopRow,
+                                                telaPequena && styles.exerciseTopRowMobile,
+                                            ]}
+                                        >
                                             <Pressable
                                                 onPress={() =>
                                                     alternarSelecao(
@@ -1012,7 +1017,6 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         gap: 12,
         padding: 10,
-        flex: 0,
     },
 
 
@@ -1024,7 +1028,11 @@ const styles = StyleSheet.create({
         gap: 8,
     },
 
-
+    exerciseTopRowMobile: {
+        flex: 0,
+        width: '100%',
+        alignSelf: 'stretch',
+    },
 
     exerciseVideoColumn: {
         flex: 4,
@@ -1035,7 +1043,8 @@ const styles = StyleSheet.create({
 
     exerciseVideoColumnMobile: {
         width: '100%',
-        flexShrink: 1,
+        flexGrow: 0,
+        flexShrink: 0,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -1044,6 +1053,7 @@ const styles = StyleSheet.create({
     exerciseVideo: {
         width: '100%',
         maxWidth: 370,
+        aspectRatio: 16 / 9,
         alignSelf: 'center',
     },
 

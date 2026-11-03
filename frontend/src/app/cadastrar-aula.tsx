@@ -1012,6 +1012,7 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         gap: 12,
         padding: 10,
+        flex: 0,
     },
 
 

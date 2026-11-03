@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 16,
+        marginTop: 35,
     },
 
     exerciseVideo: {

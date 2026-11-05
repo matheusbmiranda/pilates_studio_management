@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useWindowDimensions } from 'react-native';
+import YouTubePlayer from '@/components/YoutubePlayer';
 
 import { BottomTabInset } from '@/constants/theme';
 import {
@@ -553,61 +555,86 @@ function ExercicioCard({
                        }: {
   exercicio: Exercicio;
 }) {
+  const { width } = useWindowDimensions();
+  const telaPequena = width < 768;
+
   const nivel = formatarNivel(exercicio.niveis[0]);
   const aparelho = formatarAparelho(exercicio.aparelhos[0]);
 
   return (
-      <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={exercicio.nome}
-          onPress={() => {
-            router.push(`/editar-exercicio?id=${exercicio.id}` as Href);
-          }}
-          style={styles.card}
+      <View
+          style={[
+            styles.card,
+            telaPequena && styles.cardMobile,
+          ]}
       >
-        {exercicio.imagemUrl ? (
-            <Image
-                source={{ uri: exercicio.imagemUrl }}
-                style={styles.avatarImage}
-            />
-        ) : (
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {exercicio.nome.slice(0, 1).toUpperCase()}
-              </Text>
-            </View>
-        )}
+        <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={exercicio.nome}
+            onPress={() => {
+              router.push(`/editar-exercicio?id=${exercicio.id}` as Href);
+            }}
+            style={[
+              styles.cardInfo,
+              !telaPequena && styles.cardInfoDesktop,
+            ]}
+        >
+          {exercicio.imagemUrl ? (
+              <Image
+                  source={{ uri: exercicio.imagemUrl }}
+                  style={styles.avatarImage}
+              />
+          ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {exercicio.nome.slice(0, 1).toUpperCase()}
+                </Text>
+              </View>
+          )}
 
-        <View style={styles.cardContent}>
-          <View style={styles.nameRow}>
-            <Text
-                style={styles.exerciseName}
-                numberOfLines={1}
-            >
-              {exercicio.nome}
-            </Text>
-
-            <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>
-                {nivel}
-              </Text>
-            </View>
-          </View>
-
-          {exercicio.traducao ? (
+          <View style={styles.cardContent}>
+            <View style={styles.nameRow}>
               <Text
-                  style={styles.translation}
+                  style={styles.exerciseName}
                   numberOfLines={1}
               >
-                {exercicio.traducao}
+                {exercicio.nome}
               </Text>
-          ) : null}
+            </View>
 
-          <Text style={styles.details}>
-            {aparelho} · {nivel}
+            {exercicio.traducao ? (
+                <Text
+                    style={styles.translation}
+                    numberOfLines={1}
+                >
+                  {exercicio.traducao}
+                </Text>
+            ) : null}
+
+            <Text style={styles.details}>
+              {aparelho} · {nivel}
+            </Text>
+          </View>
+        </Pressable>
+
+        {/* Nível posicionado diretamente no card */}
+        <View style={styles.levelBadge}>
+          <Text style={styles.levelText}>
+            {nivel}
           </Text>
         </View>
-      </Pressable>
+
+        {exercicio.videoUrl?.trim() ? (
+            <View
+                style={[
+                  styles.cardVideoColumn,
+                  telaPequena && styles.cardVideoColumnMobile,
+                ]}
+            >
+              <YouTubePlayer videoUrl={exercicio.videoUrl} />
+            </View>
+        ) : null}
+      </View>
   );
 }
 
@@ -831,6 +858,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     minHeight: 96,
     padding: 14,
+    position: 'relative',
     shadowColor: '#1D2B25',
     shadowOffset: {
       width: 0,
@@ -839,6 +867,61 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.035,
     shadowRadius: 5,
     elevation: 1,
+  },
+
+  cardMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 12,
+  },
+
+  cardInfo: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  cardInfoDesktop: {
+    flex: 1,
+    maxWidth: '48%',
+  },
+
+  nameRowDesktop: {
+    justifyContent: 'flex-start',
+  },
+
+  levelBadge: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    backgroundColor: '#E5F5EA',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    zIndex: 2,
+  },
+
+  levelBadgeDesktop: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  },
+
+  cardVideoColumn: {
+    flex: 1,
+    maxWidth: 370,
+    minWidth: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+
+  cardVideoColumnMobile: {
+    width: '100%',
+    maxWidth: 520,
+    alignSelf: 'center',
+    marginTop: 35,
   },
 
   avatar: {
@@ -882,13 +965,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
-  },
-
-  levelBadge: {
-    backgroundColor: '#E5F5EA',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
   },
 
   levelText: {

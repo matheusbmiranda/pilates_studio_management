@@ -1014,7 +1014,6 @@ const styles = StyleSheet.create({
         padding: 10,
     },
 
-
     exerciseTopRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
@@ -1022,8 +1021,6 @@ const styles = StyleSheet.create({
         minWidth: 0,
         gap: 8,
     },
-
-
 
     exerciseVideoColumn: {
         flex: 4,
@@ -1058,8 +1055,6 @@ const styles = StyleSheet.create({
         minWidth: 0,
         gap: 4,
     },
-
-
 
     checkbox: {
         alignItems: 'center',
@@ -1101,7 +1096,6 @@ const styles = StyleSheet.create({
         marginTop: 3,
     },
 
-
     exerciseTags: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -1109,7 +1103,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
         alignSelf: 'flex-start',
     },
-
 
     exerciseTag: {
         backgroundColor: '#DCEFE6',
@@ -1129,7 +1122,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         marginTop: 7,
     },
-
 
     infoButton: {
         alignItems: 'center',
@@ -1343,4 +1335,5 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         resizeMode: 'contain',
     },
+
 });
